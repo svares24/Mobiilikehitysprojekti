@@ -14,6 +14,7 @@ export interface Point {
   route_id: number;
   lat: number;
   lon: number;
+  alt: number;
   time: Date;
 }
 export interface Route {
