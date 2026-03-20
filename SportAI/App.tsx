@@ -1,12 +1,23 @@
 import 'react-native-gesture-handler';
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import NavigationBar from './src/navigation/NavigationBar';
+
+import MapView from 'react-native-maps';
+import { StyleSheet, View } from 'react-native';
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <NavigationBar />
-    </NavigationContainer>
+    <View style={styles.container}>
+      <MapView style={styles.map} />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+});

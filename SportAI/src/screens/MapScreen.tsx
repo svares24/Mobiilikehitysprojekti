@@ -1,26 +1,47 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 // https://docs.expo.dev/versions/latest/sdk/map-view/
 
-export default function TestScreen2() {
+export default function MapScreen() {
   return (
-    <SafeAreaView style={styles.container}>
       <View style={styles.container}>
-        <MapView style={styles.map} provider={PROVIDER_GOOGLE} />
-      </View>
-    </SafeAreaView>
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+        >
+          <Marker 
+     coordinate= {
+              {
+                latitude: 37.78825,
+                longitude: -122.4324,
+              }
+            }
+            title={"Marker Title"}
+            description={"Marker Description"}
+            />
+      </MapView>
+      </View> 
   );
 }
 
 const styles = StyleSheet.create({
    container: {
-    flex: 1,
-  },
+   position: 'absolute',
+   top: 0,
+   left: 0,
+   right: 0,
+   bottom: 0,
+   justifyContent: 'flex-end',
+   alignItems: 'center',
+ },
   map: {
-    width: '100%',
-    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
