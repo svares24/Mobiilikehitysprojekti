@@ -1,24 +1,26 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
+import { Button, FlatList, StyleSheet, Text, View } from 'react-native';
 import {
-  Button,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { addRoute, getRoutes, Route } from '../util/dbHelper';
+  addCompleteRoute,
+  changeRouteName,
+  deleteRoute,
+  getAllPoints,
+  getRoutes,
+} from '../util/dbHelper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Point, Route } from '../types';
 
 const SQLTest = () => {
   const db = useSQLiteContext();
-  const [name, setName] = useState('');
   const [routes, setRoutes] = useState<Route[]>([]);
+  const [points, setPoints] = useState<Point[]>([]);
 
   const refreshData = async () => {
     const result = await getRoutes(db);
     setRoutes(result);
+    const pointResult = await getAllPoints(db);
+    setPoints(pointResult);
   };
 
   useEffect(() => {
@@ -26,32 +28,73 @@ const SQLTest = () => {
   }, []);
   return (
     <SafeAreaView style={styles.container}>
-      <View>
-        <TextInput
-          style={{ borderWidth: 1 }}
-          value={name}
-          onChangeText={setName}
-        ></TextInput>
-        <Button
-          title="Save"
-          onPress={async () => {
-            await addRoute(db, name);
-            await refreshData();
-          }}
-        ></Button>
-        <FlatList
-          data={routes}
-          renderItem={({ item }) => {
-            return (
-              <View>
-                <Text>
-                  {item.route_id} {item.name}
-                </Text>
-              </View>
-            );
-          }}
-        ></FlatList>
-      </View>
+      <Button
+        title="Test1"
+        onPress={async () => {
+          await addCompleteRoute(db, 'Test1', [
+            { lat: 10, lon: 10, alt: 10, time: new Date(Date.now()) },
+            {
+              lat: 10.01,
+              lon: 10.01,
+              alt: 10.01,
+              time: new Date(Date.now() + 1000),
+            },
+          ]);
+          refreshData();
+        }}
+      ></Button>
+      <Button
+        title="Test2"
+        onPress={async () => {
+          await addCompleteRoute(db, 'Test2', [
+            { lat: 10.05, lon: 10.05, alt: 10, time: new Date(10) },
+            { lat: 10.01, lon: 10.01, alt: 10.01, time: new Date(20) },
+          ]);
+          refreshData();
+        }}
+      ></Button>
+      <Text>Routes</Text>
+      <FlatList
+        data={routes}
+        renderItem={({ item }) => {
+          return (
+            <View>
+              <Text>
+                {item.route_id} {item.name} {item.distance} {item.duration}{' '}
+                {item.created.toString()}
+              </Text>
+              <Button
+                title="Delete"
+                onPress={async () => {
+                  await deleteRoute(db, item.route_id);
+                  await refreshData();
+                }}
+              ></Button>
+              <Button
+                title="Rename"
+                onPress={async () => {
+                  await changeRouteName(db, item.route_id, 'New name');
+                  await refreshData();
+                }}
+              ></Button>
+            </View>
+          );
+        }}
+      ></FlatList>
+      <Text>Points</Text>
+      <FlatList
+        data={points}
+        renderItem={({ item }) => {
+          return (
+            <View>
+              <Text>
+                {item.point_id} {item.route_id} {item.lat} {item.lon} {item.alt}{' '}
+                {item.time.toString()}
+              </Text>
+            </View>
+          );
+        }}
+      ></FlatList>
     </SafeAreaView>
   );
 };
