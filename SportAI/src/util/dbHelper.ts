@@ -12,7 +12,7 @@ export const createTables = async (db: SQLiteDatabase) => {
     id: number;
     v: number;
   }>`SELECT * FROM version;`;
-  if (result[0].v != version) {
+  if (!result[0] || result[0].v != version) {
     await db.execAsync('DROP TABLE route;');
     await db.execAsync('DROP TABLE point;');
   }
