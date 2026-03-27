@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../theme/ThemeContext';
 
 type UserData = {
   age: string;
@@ -22,30 +23,7 @@ type UserData = {
 
 type EditableField = 'age' | 'height' | 'weight' | 'fitnessLevel' | 'language';
 
-// miksi tässä edes on kieliä?
-const languages = [
-  'English',
-  'American',
-  'Australian',
-  'British',
-  'Hindi',
-  'Finnish',
-  'French',
-  'Spanish',
-  'Catalan',
-  'Swedish',
-  'Icelandic',
-  'Norwegian',
-  'Danish',
-  'Albanian',
-  'Serbian',
-  'Bulgarian',
-  'Faroese',
-  'Estonian',
-  'Latvian',
-  'Lithuanian',
-  'Korean',
-];
+const languages = ['American', 'Finnish'];
 
 export default function SettingsScreen() {
   const [user, setUser] = useState<UserData>({
@@ -56,7 +34,7 @@ export default function SettingsScreen() {
     language: 'English',
   });
 
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, darkMode, toggleDarkMode } = useTheme();
   const [showPreview, setShowPreview] = useState(false);
   const [editingField, setEditingField] = useState<EditableField | null>(null);
 
@@ -114,48 +92,84 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 32, fontWeight: 'bold', marginBottom: 20 }}>
+        <Text
+          style={{
+            fontSize: 32,
+            fontWeight: 'bold',
+            marginBottom: 20,
+            color: theme.text,
+          }}
+        >
           Settings
         </Text>
 
-        <Pressable style={btn} onPress={() => setEditingField('age')}>
-          <Text>Age: {user.age || '-'}</Text>
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('age')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Age: {user.age || '-'}
+          </Text>
         </Pressable>
 
-        <Pressable style={btn} onPress={() => setEditingField('height')}>
-          <Text>Height: {user.height || '-'} cm</Text>
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('height')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Height: {user.height || '-'} cm
+          </Text>
         </Pressable>
 
-        <Pressable style={btn} onPress={() => setEditingField('weight')}>
-          <Text>Weight: {user.weight || '-'} kg</Text>
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('weight')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Weight: {user.weight || '-'} kg
+          </Text>
         </Pressable>
 
-        <Pressable style={btn} onPress={() => setEditingField('fitnessLevel')}>
-          <Text>Fitness Level: {user.fitnessLevel || '-'}</Text>
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('fitnessLevel')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Fitness Level: {user.fitnessLevel || '-'}
+          </Text>
         </Pressable>
 
-        <View style={[btn, row]}>
-          <Text>Dark Mode</Text>
-          <Switch value={darkMode} onValueChange={setDarkMode} />
+        <View style={[btn, row, { backgroundColor: theme.button }]}>
+          <Text style={{ color: theme.buttonText }}>Dark Mode</Text>
+          <Switch value={darkMode} onValueChange={toggleDarkMode} />
         </View>
 
-        <Pressable style={btn} onPress={() => setEditingField('language')}>
-          <Text>Language: {user.language}</Text>
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('language')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Language: {user.language}
+          </Text>
         </Pressable>
 
-        <Text style={{ marginTop: 20 }}>App Version: 1.0.0</Text>
+        <Text style={{ marginTop: 20, color: theme.text }}>
+          App Version: 1.0.0
+        </Text>
 
         <Pressable onPress={() => setShowPreview(!showPreview)}>
-          <Text style={{ marginTop: 20 }}>
+          <Text style={{ marginTop: 20, color: theme.text }}>
             {showPreview ? 'Hide Data' : 'Show Data'}
           </Text>
         </Pressable>
 
         {showPreview && (
           <>
-            <Text>{JSON.stringify(user, null, 2)}</Text>
+            <Text style={{ color: theme.text }}>
+              {JSON.stringify(user, null, 2)}
+            </Text>
 
             <Pressable
               onPress={clearData}
@@ -166,7 +180,12 @@ export default function SettingsScreen() {
                 borderRadius: 8,
               }}
             >
-              <Text style={{ color: 'white', textAlign: 'center' }}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  color: theme.buttonText,
+                }}
+              >
                 Clear Data
               </Text>
             </Pressable>
@@ -176,7 +195,7 @@ export default function SettingsScreen() {
 
       <Modal visible={!!editingField} transparent animationType="fade">
         <View style={overlay}>
-          <View style={modalBox}>
+          <View style={[modalBox, { backgroundColor: theme.button }]}>
             {(editingField === 'age' ||
               editingField === 'height' ||
               editingField === 'weight') && (
@@ -191,7 +210,14 @@ export default function SettingsScreen() {
                   if (editingField === 'height') updateHeight(clean);
                   if (editingField === 'weight') updateWeight(clean);
                 }}
-                style={input}
+                style={[
+                  input,
+                  {
+                    backgroundColor: theme.inputBackground,
+                    color: theme.inputText,
+                    borderColor: theme.inputBorder,
+                  },
+                ]}
               />
             )}
 
@@ -200,7 +226,14 @@ export default function SettingsScreen() {
                 ref={inputRef}
                 value={user.fitnessLevel}
                 onChangeText={updateFitnessLevel}
-                style={input}
+                style={[
+                  input,
+                  {
+                    backgroundColor: theme.inputBackground,
+                    color: theme.inputText,
+                    borderColor: theme.inputBorder,
+                  },
+                ]}
               />
             )}
 
@@ -211,20 +244,20 @@ export default function SettingsScreen() {
                 style={{ maxHeight: 200 }}
                 renderItem={({ item }) => (
                   <Pressable
-                    style={btn}
+                    style={[btn, { backgroundColor: theme.button }]}
                     onPress={() => {
                       updateLanguage(item);
                       setEditingField(null);
                     }}
                   >
-                    <Text>{item}</Text>
+                    <Text style={{ color: theme.buttonText }}>{item}</Text>
                   </Pressable>
                 )}
               />
             )}
 
             <Pressable onPress={() => setEditingField(null)}>
-              <Text style={{ marginTop: 10 }}>Close</Text>
+              <Text style={{ marginTop: 10, color: theme.text }}>Close</Text>
             </Pressable>
           </View>
         </View>
@@ -236,7 +269,6 @@ export default function SettingsScreen() {
 const btn = {
   padding: 16,
   marginBottom: 12,
-  backgroundColor: '#eee',
   borderRadius: 10,
 };
 
@@ -255,7 +287,6 @@ const overlay = {
 
 const modalBox = {
   width: '80%',
-  backgroundColor: 'white',
   padding: 20,
   borderRadius: 12,
 };
