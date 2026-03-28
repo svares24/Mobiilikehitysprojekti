@@ -95,3 +95,17 @@ export const getPoints = async (
     await db.sql<Point>`SELECT * FROM point WHERE route_id == ${route_id} ORDER BY time;`;
   return result;
 };
+
+export const getRoutesByDate = async (
+  db: SQLiteDatabase,
+  dateString: string
+): Promise<Route[]> => {
+  const start = new Date(dateString);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(dateString);
+  end.setHours(23, 59, 59, 999);
+
+  const result = await db.sql<Route>`
+    SELECT * FROM route WHERE created >= ${start.getTime()} AND created <= ${end.getTime()} ORDER BY created;`;
+  return result;
+};

@@ -3,5 +3,5 @@ export interface Route {
   name: string;
   distance: number;
   duration: number;
-  created: Date;
+  created: number;
 }
