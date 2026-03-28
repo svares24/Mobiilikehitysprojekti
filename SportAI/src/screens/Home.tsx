@@ -54,7 +54,7 @@ export default function HomeScreen({ navigation }: Props) {
     const date = formatDate(r.created);
     marks[date] = { marked: true };
   });
-
+  // :(
   if (selectedDate) {
     marks[selectedDate] = {
       ...(marks[selectedDate] || {}),
@@ -92,11 +92,10 @@ export default function HomeScreen({ navigation }: Props) {
           onDayPress={handleDayPress}
           markedDates={getMarkedDates()}
         />
-
         <Pressable
+        /*WIP*/
           style={styles.Button}
-          onPress={() => navigation.navigate("Test1")}
-        >
+          onPress={() => navigation.navigate("Test1")}>
           <Text style={styles.ButtonText}>Start</Text>
         </Pressable>
 
