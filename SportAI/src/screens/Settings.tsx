@@ -1,0 +1,298 @@
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  Text,
+  TextInput,
+  Switch,
+  ScrollView,
+  View,
+  Pressable,
+  Modal,
+  FlatList,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../theme/ThemeContext';
+
+type UserData = {
+  age: string;
+  height: string;
+  weight: string;
+  fitnessLevel: string;
+  language: string;
+};
+
+type EditableField = 'age' | 'height' | 'weight' | 'fitnessLevel' | 'language';
+
+const languages = ['American', 'Finnish'];
+
+export default function SettingsScreen() {
+  const [user, setUser] = useState<UserData>({
+    age: '',
+    height: '',
+    weight: '',
+    fitnessLevel: '',
+    language: 'English',
+  });
+
+  const { theme, darkMode, toggleDarkMode } = useTheme();
+  const [showPreview, setShowPreview] = useState(false);
+  const [editingField, setEditingField] = useState<EditableField | null>(null);
+
+  const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await AsyncStorage.getItem('userData');
+      if (data) setUser(JSON.parse(data));
+    };
+    load();
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem('userData', JSON.stringify(user));
+  }, [user]);
+
+  useEffect(() => {
+    if (editingField) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [editingField]);
+
+  const updateAge = (value: string) => {
+    setUser((prev) => ({ ...prev, age: value }));
+  };
+
+  const updateHeight = (value: string) => {
+    setUser((prev) => ({ ...prev, height: value }));
+  };
+
+  const updateWeight = (value: string) => {
+    setUser((prev) => ({ ...prev, weight: value }));
+  };
+
+  const updateFitnessLevel = (value: string) => {
+    setUser((prev) => ({ ...prev, fitnessLevel: value }));
+  };
+
+  const updateLanguage = (value: string) => {
+    setUser((prev) => ({ ...prev, language: value }));
+  };
+
+  const clearData = async () => {
+    await AsyncStorage.removeItem('userData');
+    setUser({
+      age: '',
+      height: '',
+      weight: '',
+      fitnessLevel: '',
+      language: 'English',
+    });
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+        <Text
+          style={{
+            fontSize: 32,
+            fontWeight: 'bold',
+            marginBottom: 20,
+            color: theme.text,
+          }}
+        >
+          Settings
+        </Text>
+
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('age')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Age: {user.age || '-'}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('height')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Height: {user.height || '-'} cm
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('weight')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Weight: {user.weight || '-'} kg
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('fitnessLevel')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Fitness Level: {user.fitnessLevel || '-'}
+          </Text>
+        </Pressable>
+
+        <View style={[btn, row, { backgroundColor: theme.button }]}>
+          <Text style={{ color: theme.buttonText }}>Dark Mode</Text>
+          <Switch value={darkMode} onValueChange={toggleDarkMode} />
+        </View>
+
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('language')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Language: {user.language}
+          </Text>
+        </Pressable>
+
+        <Text style={{ marginTop: 20, color: theme.text }}>
+          App Version: 1.0.0
+        </Text>
+
+        <Pressable onPress={() => setShowPreview(!showPreview)}>
+          <Text style={{ marginTop: 20, color: theme.text }}>
+            {showPreview ? 'Hide Data' : 'Show Data'}
+          </Text>
+        </Pressable>
+
+        {showPreview && (
+          <>
+            <Text style={{ color: theme.text }}>
+              {JSON.stringify(user, null, 2)}
+            </Text>
+
+            <Pressable
+              onPress={clearData}
+              style={{
+                marginTop: 10,
+                padding: 14,
+                backgroundColor: '#ff4444',
+                borderRadius: 8,
+              }}
+            >
+              <Text
+                style={{
+                  textAlign: 'center',
+                  color: theme.buttonText,
+                }}
+              >
+                Clear Data
+              </Text>
+            </Pressable>
+          </>
+        )}
+      </ScrollView>
+
+      <Modal visible={!!editingField} transparent animationType="fade">
+        <View style={overlay}>
+          <View style={[modalBox, { backgroundColor: theme.button }]}>
+            {(editingField === 'age' ||
+              editingField === 'height' ||
+              editingField === 'weight') && (
+              <TextInput
+                ref={inputRef}
+                keyboardType="number-pad"
+                value={user[editingField]}
+                onChangeText={(v) => {
+                  const clean = v.replace(/[^0-9]/g, '');
+
+                  if (editingField === 'age') updateAge(clean);
+                  if (editingField === 'height') updateHeight(clean);
+                  if (editingField === 'weight') updateWeight(clean);
+                }}
+                style={[
+                  input,
+                  {
+                    backgroundColor: theme.inputBackground,
+                    color: theme.inputText,
+                    borderColor: theme.inputBorder,
+                  },
+                ]}
+              />
+            )}
+
+            {editingField === 'fitnessLevel' && (
+              <TextInput
+                ref={inputRef}
+                value={user.fitnessLevel}
+                onChangeText={updateFitnessLevel}
+                style={[
+                  input,
+                  {
+                    backgroundColor: theme.inputBackground,
+                    color: theme.inputText,
+                    borderColor: theme.inputBorder,
+                  },
+                ]}
+              />
+            )}
+
+            {editingField === 'language' && (
+              <FlatList
+                data={languages}
+                keyExtractor={(i) => i}
+                style={{ maxHeight: 200 }}
+                renderItem={({ item }) => (
+                  <Pressable
+                    style={[btn, { backgroundColor: theme.button }]}
+                    onPress={() => {
+                      updateLanguage(item);
+                      setEditingField(null);
+                    }}
+                  >
+                    <Text style={{ color: theme.buttonText }}>{item}</Text>
+                  </Pressable>
+                )}
+              />
+            )}
+
+            <Pressable onPress={() => setEditingField(null)}>
+              <Text style={{ marginTop: 10, color: theme.text }}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+const btn = {
+  padding: 16,
+  marginBottom: 12,
+  borderRadius: 10,
+};
+
+const row = {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+};
+
+const overlay = {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+};
+
+const modalBox = {
+  width: '80%',
+  padding: 20,
+  borderRadius: 12,
+};
+
+const input = {
+  borderWidth: 1,
+  padding: 10,
+  marginBottom: 10,
+};

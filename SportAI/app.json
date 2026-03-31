@@ -27,10 +27,11 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      [
-        "react-native-maps",
+      "expo-sqlite",
+       [
+        "expo-location",
         {
-          "androidGoogleMapsApiKey": "process.env.YOUR_GOOGLE_MAPS_API_KEY"
+          "locationAlwaysAndWhenInUsePermission": "Allow this app to use your location."
         }
       ]
     ]
