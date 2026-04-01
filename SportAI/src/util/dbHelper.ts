@@ -13,8 +13,8 @@ export const createTables = async (db: SQLiteDatabase) => {
     v: number;
   }>`SELECT * FROM version;`;
   if (!result[0] || result[0].v != version) {
-    await db.execAsync('DROP TABLE route;');
-    await db.execAsync('DROP TABLE point;');
+    await db.execAsync('DROP TABLE IF EXISTS route;');
+    await db.execAsync('DROP TABLE IF EXISTS point;');
   }
 
   await db.execAsync('PRAGMA journal_mode = WAL');
