@@ -1,6 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AI from '../util/AI';
 import { useState } from 'react';
 import { getRoutes } from '../util/dbHelper';
@@ -13,7 +14,8 @@ const AITest = () => {
 
   const generateQuery = async (db: SQLiteDatabase) => {
     const result = await getRoutes(db);
-    const query = `Here are my past runs: ${JSON.stringify(result)} How long should my run be today? Respond only with the length, 0 if I should take a break today. My goal is to improve`;
+    const data = await AsyncStorage.getItem('userData');
+    const query = `Here are my past runs: ${JSON.stringify(result)} How long should my run be today? Respond only with the length, 0 if I should take a break today. My goal is to improve. Here is some information about me: ${data}`;
     console.log(query);
     return query;
   };

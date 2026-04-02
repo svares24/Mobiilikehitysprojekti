@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Text,
   TextInput,
@@ -12,14 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeContext';
-
-type UserData = {
-  age: string;
-  height: string;
-  weight: string;
-  fitnessLevel: string;
-  language: string;
-};
+import { UserData } from '../types';
 
 type EditableField = 'age' | 'height' | 'weight' | 'fitnessLevel' | 'language';
 
