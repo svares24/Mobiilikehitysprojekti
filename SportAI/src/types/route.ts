@@ -3,5 +3,5 @@ export interface Route {
   name: string;
   distance: number;
   duration: number;
-  created: number; //changed to number from date, due to format issues. Feel free to change.
+  created: number; //changed to number from date, due to format issues. Feel free to change. Currently breaks the points system.
 }
