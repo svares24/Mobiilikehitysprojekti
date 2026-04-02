@@ -2,12 +2,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import AI from '../util/AI';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { getRoutes } from '../util/dbHelper';
+import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
 
 const AITest = () => {
   const { theme } = useTheme();
   const [response, setResponse] = useState<string | undefined>('');
-  useEffect(() => {}, []);
+  const db = useSQLiteContext();
+
+  const generateQuery = async (db: SQLiteDatabase) => {
+    const result = await getRoutes(db);
+    const query = `Here are my past runs: ${JSON.stringify(result)} How long should my run be today? Respond only with the length, 0 if I should take a break today. My goal is to improve`;
+    console.log(query);
+    return query;
+  };
 
   return (
     <SafeAreaView
@@ -19,8 +28,7 @@ const AITest = () => {
           onPress={async () => {
             const result = AI.models.generateContent({
               model: 'gemma-3-27b-it',
-              contents:
-                'Generate todays run length considering I ran 1km yesterday. Respond only with the length, 0 if I should take a break today. My goal is to improve',
+              contents: await generateQuery(db),
             });
             setResponse('Loading');
             const final = await result;

@@ -32,12 +32,29 @@ const SQLTest = () => {
         title="Test1"
         onPress={async () => {
           await addCompleteRoute(db, 'Test1', [
-            { lat: 10, lon: 10, alt: 10, time: new Date(Date.now()) },
             {
-              lat: 10.01,
-              lon: 10.01,
-              alt: 10.01,
-              time: new Date(Date.now() + 1000),
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(Date.now() - 1000 * 60 * 60 * 24),
+            },
+            {
+              lat: 65.062596,
+              lon: 25.496101,
+              alt: 10,
+              time: new Date(Date.now() - 1000 * 60 * 60 * 24 + 60 * 1000 * 5),
+            },
+            {
+              lat: 65.055791,
+              lon: 25.472551,
+              alt: 10,
+              time: new Date(Date.now() - 1000 * 60 * 60 * 24 + 60 * 1000 * 10),
+            },
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(Date.now() - 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
             },
           ]);
           refreshData();
