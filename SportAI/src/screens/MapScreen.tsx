@@ -1,7 +1,14 @@
-import React, { useEffect, useState, useRef} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
+
+export interface Coords {
+  lat: number;
+  lon: number;
+  alt: number;
+  time: Date;
+}
 
 const html = `
 <!DOCTYPE html>
@@ -35,12 +42,12 @@ const html = `
 </html>
 `;
 
-
-
 export default function MapScreen() {
-
   const webviewRef = useRef<WebView>(null);
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null
+  );
+  const [locationArray, setLocationArray] = useState<Coords[][]>([[]]);
 
   useEffect(() => {
     (async () => {
@@ -48,19 +55,38 @@ export default function MapScreen() {
       if (status !== 'granted') return;
 
       await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.High, distanceInterval: 1 },
-        (loc) => setLocation(loc)
+        {
+          accuracy: Location.Accuracy.BestForNavigation,
+          distanceInterval: 1, // distance interval is the minimum distance between updates in meters
+          timeInterval: 5000, // time interval is the minimumtime between updated,
+        },
+        (loc) => {
+          setLocation(loc);
+          setLocationArray((prev) => [
+            [
+              ...prev[0],
+              {
+                lat: loc.coords.latitude,
+                lon: loc.coords.longitude,
+                alt: loc.coords.altitude ?? 0,
+                time: new Date(loc.timestamp),
+              },
+            ],
+          ]);
+        }
       );
     })();
   }, []);
 
-  setTimeout(() => {
+  useEffect(() => {
+    if (location) {
       webviewRef.current?.injectJavaScript(`
-        window.map.setView([${location?.coords.latitude}, ${location?.coords.longitude}], 15);
-        L.marker([${location?.coords.latitude}, ${location?.coords.longitude}]).addTo(map).bindPopup([${location?.coords.latitude}, ${location?.coords.longitude}].toString()).openPopup();
+        window.map.flyTo([${location.coords.latitude}, ${location.coords.longitude}], 19);
+        L.marker([${location.coords.latitude}, ${location.coords.longitude}]).addTo(window.map);
       `);
-    }, 3000);
-  
+      console.log(locationArray);
+    }
+  }, [location]);
 
   return (
     <View style={styles.container}>
