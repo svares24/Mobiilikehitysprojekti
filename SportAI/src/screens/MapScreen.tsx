@@ -2,13 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
-
-export interface Coords {
-  lat: number;
-  lon: number;
-  alt: number;
-  time: Date;
-}
+import { Coords } from '../types/coords';
 
 const html = `
 <!DOCTYPE html>
@@ -56,8 +50,8 @@ export default function MapScreen() {
 
       await Location.watchPositionAsync(
         {
-          accuracy: Location.Accuracy.BestForNavigation,
-          distanceInterval: 1, // distance interval is the minimum distance between updates in meters
+          accuracy: Location.Accuracy.Highest,
+          distanceInterval: 3, // distance interval is the minimum distance between updates in meters
           timeInterval: 5000, // time interval is the minimumtime between updated,
         },
         (loc) => {
@@ -82,7 +76,7 @@ export default function MapScreen() {
     if (location) {
       webviewRef.current?.injectJavaScript(`
         window.map.flyTo([${location.coords.latitude}, ${location.coords.longitude}], 19);
-        L.marker([${location.coords.latitude}, ${location.coords.longitude}]).addTo(window.map);
+        L.polyline(${JSON.stringify(locationArray[0].map((loc) => [loc.lat, loc.lon]))}, {color: 'blue'}).addTo(window.map);
       `);
       console.log(locationArray);
     }
