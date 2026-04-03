@@ -13,10 +13,25 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeContext';
 import { UserData } from '../types';
+import { DeviceEventEmitter } from 'react-native';
 
-type EditableField = 'age' | 'height' | 'weight' | 'fitnessLevel' | 'language';
+type EditableField =
+  | 'age'
+  | 'height'
+  | 'weight'
+  | 'fitnessLevel'
+  | 'language'
+  | 'goal';
 
 const languages = ['American', 'Finnish'];
+
+const goals = [
+  'Lose weight',
+  'Train for a marathon',
+  "Train for Cooper's test",
+  'General fitness',
+  'Custom',
+];
 
 export default function SettingsScreen() {
   const [user, setUser] = useState<UserData>({
@@ -25,6 +40,7 @@ export default function SettingsScreen() {
     weight: '',
     fitnessLevel: '',
     language: 'English',
+    goal: '',
   });
 
   const { theme, darkMode, toggleDarkMode } = useTheme();
@@ -32,6 +48,8 @@ export default function SettingsScreen() {
   const [editingField, setEditingField] = useState<EditableField | null>(null);
 
   const inputRef = useRef<TextInput>(null);
+
+  const [isCustomGoal, setIsCustomGoal] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -73,15 +91,24 @@ export default function SettingsScreen() {
     setUser((prev) => ({ ...prev, language: value }));
   };
 
+  const updateGoal = (value: string) => {
+    setUser((prev) => ({ ...prev, goal: value }));
+  };
+
   const clearData = async () => {
+    await AsyncStorage.removeItem('hasLaunched');
     await AsyncStorage.removeItem('userData');
+
     setUser({
       age: '',
       height: '',
       weight: '',
       fitnessLevel: '',
       language: 'English',
+      goal: '',
     });
+
+    DeviceEventEmitter.emit('appDataCleared');
   };
 
   return (
@@ -131,6 +158,15 @@ export default function SettingsScreen() {
         >
           <Text style={{ color: theme.buttonText }}>
             Fitness Level: {user.fitnessLevel || '-'}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={() => setEditingField('goal')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            Goal: {user.goal || '-'}
           </Text>
         </Pressable>
 
@@ -228,6 +264,49 @@ export default function SettingsScreen() {
                   },
                 ]}
               />
+            )}
+
+            {editingField === 'goal' && (
+              <>
+                <FlatList
+                  data={goals}
+                  keyExtractor={(i) => i}
+                  style={{ maxHeight: 200 }}
+                  renderItem={({ item }) => (
+                    <Pressable
+                      style={[btn, { backgroundColor: theme.button }]}
+                      onPress={() => {
+                        if (item === 'Custom') {
+                          setIsCustomGoal(true);
+                        } else {
+                          setIsCustomGoal(false);
+                          updateGoal(item);
+                          setEditingField(null);
+                        }
+                      }}
+                    >
+                      <Text style={{ color: theme.buttonText }}>{item}</Text>
+                    </Pressable>
+                  )}
+                />
+
+                {isCustomGoal && (
+                  <TextInput
+                    ref={inputRef}
+                    placeholder="Enter custom goal"
+                    value={user.goal}
+                    onChangeText={updateGoal}
+                    style={[
+                      input,
+                      {
+                        backgroundColor: theme.inputBackground,
+                        color: theme.inputText,
+                        borderColor: theme.inputBorder,
+                      },
+                    ]}
+                  />
+                )}
+              </>
             )}
 
             {editingField === 'language' && (

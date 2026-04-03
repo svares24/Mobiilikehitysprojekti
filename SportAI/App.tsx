@@ -4,14 +4,55 @@ import NavigationBar from './src/navigation/NavigationBar';
 import { SQLiteProvider } from 'expo-sqlite';
 import { createTables } from './src/util/dbHelper';
 import { ThemeProvider } from './src/theme/ThemeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
+import { DeviceEventEmitter } from 'react-native';
+import FirstTimeScreen from './src/screens/FirstTimeScreen';
+
+function AppInner() {
+  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
+
+  const checkLaunch = async () => {
+    const val = await AsyncStorage.getItem('hasLaunched');
+    setIsFirstLaunch(val === null);
+  };
+
+  useEffect(() => {
+    checkLaunch();
+
+    const sub = DeviceEventEmitter.addListener('appDataCleared', () => {
+      setIsFirstLaunch(true);
+    });
+
+    return () => {
+      sub.remove();
+    };
+  }, []);
+
+  if (isFirstLaunch === null) return null;
+
+  if (isFirstLaunch) {
+    return (
+      <FirstTimeScreen
+        onFinish={() => {
+          setIsFirstLaunch(false);
+        }}
+      />
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <NavigationBar />
+    </NavigationContainer>
+  );
+}
 
 export default function App() {
   return (
     <ThemeProvider>
       <SQLiteProvider databaseName="route.db" onInit={createTables}>
-        <NavigationContainer>
-          <NavigationBar />
-        </NavigationContainer>
+        <AppInner />
       </SQLiteProvider>
     </ThemeProvider>
   );
