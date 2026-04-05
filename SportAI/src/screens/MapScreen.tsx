@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
 import { Coords } from '../types/coords';
@@ -24,13 +24,13 @@ const html = `
 <body>
   <div id="map"></div>
   <script>
-    window.map = L.map('map').setView([60.1699, 24.9384], 13);
-
+    window.map = L.map('map').setView([65,25.5], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(window.map);
+    let circleMarker = L.circleMarker([65,25.5], {radius: 6, color: 'white', fill: true, fillColor: '#0096FF', fillOpacity: 1, weight: 2}).bringToFront().addTo(window.map);
   </script>
 </body>
 </html>
@@ -42,6 +42,7 @@ export default function MapScreen() {
     null
   );
   const [locationArray, setLocationArray] = useState<Coords[][]>([[]]);
+  const [totalDistance, setTotalDistance] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -50,9 +51,8 @@ export default function MapScreen() {
 
       await Location.watchPositionAsync(
         {
-          accuracy: Location.Accuracy.Highest,
-          distanceInterval: 3, // distance interval is the minimum distance between updates in meters
-          timeInterval: 5000, // time interval is the minimumtime between updated,
+          accuracy: Location.Accuracy.BestForNavigation,
+          distanceInterval: 5, // distance interval is the minimum distance between updates in meters
         },
         (loc) => {
           setLocation(loc);
@@ -75,10 +75,12 @@ export default function MapScreen() {
   useEffect(() => {
     if (location) {
       webviewRef.current?.injectJavaScript(`
-        window.map.flyTo([${location.coords.latitude}, ${location.coords.longitude}], 19);
+        window.map.setView([${location.coords.latitude}, ${location.coords.longitude}], 19);
+        circleMarker.setLatLng([${location.coords.latitude}, ${location.coords.longitude}]);
         L.polyline(${JSON.stringify(locationArray[0].map((loc) => [loc.lat, loc.lon]))}, {color: 'blue'}).addTo(window.map);
       `);
-      console.log(locationArray);
+      setTotalDistance(totalDistance + 5);
+      console.log(totalDistance);
     }
   }, [location]);
 
@@ -91,6 +93,9 @@ export default function MapScreen() {
         javaScriptEnabled
         domStorageEnabled
       />
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>▶</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -101,5 +106,17 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  button: {
+    position: 'absolute',
+    bottom: 30,
+    left: 150,
+    backgroundColor: 'lightblue',
+    padding: 10,
+    borderRadius: 400,
+  },
+  buttonText: {
+    fontSize: 40,
+    color: 'white',
   },
 });
