@@ -3,6 +3,8 @@ import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
 import { Coords } from '../types/coords';
+import { useSQLiteContext } from 'expo-sqlite';
+import { addCompleteRoute } from '../util/dbHelper';
 
 const html = `
 <!DOCTYPE html>
@@ -43,8 +45,9 @@ export default function MapScreen() {
   );
   const [locationArray, setLocationArray] = useState<Coords[][]>([[]]);
   const [totalDistance, setTotalDistance] = useState(0);
+  const db = useSQLiteContext();
 
-  useEffect(() => {
+  const startTrip = () => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
@@ -70,13 +73,22 @@ export default function MapScreen() {
         }
       );
     })();
-  }, []);
+  };
+  // long press to stop trip
+  const stopTrip = () => {
+    saveTrip();
+  };
+
+  const saveTrip = async () => {
+    await addCompleteRoute(db, 'Test', locationArray[0]);
+  };
 
   useEffect(() => {
     if (location) {
       webviewRef.current?.injectJavaScript(`
         window.map.setView([${location.coords.latitude}, ${location.coords.longitude}], 19);
         circleMarker.setLatLng([${location.coords.latitude}, ${location.coords.longitude}]);
+        circleMarker.redraw();
         L.polyline(${JSON.stringify(locationArray[0].map((loc) => [loc.lat, loc.lon]))}, {color: 'blue'}).addTo(window.map);
       `);
       setTotalDistance(totalDistance + 5);
@@ -93,7 +105,11 @@ export default function MapScreen() {
         javaScriptEnabled
         domStorageEnabled
       />
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={startTrip}
+        onLongPress={stopTrip}
+      >
         <Text style={styles.buttonText}>▶</Text>
       </TouchableOpacity>
     </View>
