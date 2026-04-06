@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Image } from 'react-native';
 import TestScreen1 from '../screens/TestScreen1';
-import TestScreen2 from '../screens/TestScreen2';
 import SQLTest from '../screens/SQLTest';
 import HomeScreen from '../screens/Home';
 import Settings from '../screens/Settings';
@@ -8,9 +8,14 @@ import MapScreen from '../screens/MapScreen';
 import { useTheme } from '../theme/ThemeContext';
 import AITest from '../screens/AITest';
 
+import sqlIcon from '../../icons/sql.png';
+import speechbubbleIcon from '../../icons/speechbubble.png';
+import mapIcon from '../../icons/map.png';
+import homepageIcon from '../../icons/homepage.png';
+import settingsIcon from '../../icons/settings.png';
+
 export type RootTabParamList = {
   Test1: undefined;
-  Test2: undefined;
   SQLTest: undefined;
   AITest: undefined;
   Map: undefined;
@@ -25,7 +30,7 @@ export default function NavigationBar() {
   return (
     <Tab.Navigator
       key={darkMode ? 'dark' : 'light'}
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
 
         tabBarStyle: {
@@ -40,10 +45,45 @@ export default function NavigationBar() {
         tabBarLabelStyle: {
           fontSize: 12,
         },
-      }}
+
+        tabBarIcon: ({ size }) => {
+          let icon;
+
+          switch (route.name) {
+            case 'SQLTest':
+              icon = sqlIcon;
+              break;
+            case 'AITest':
+              icon = speechbubbleIcon;
+              break;
+            case 'Map':
+              icon = mapIcon;
+              break;
+            case 'Home':
+              icon = homepageIcon;
+              break;
+            case 'Settings':
+              icon = settingsIcon;
+              break;
+            default:
+              return null;
+          }
+
+          return (
+            <Image
+              source={icon}
+              style={{
+                width: size,
+                height: size,
+                //tintColor: focused ? theme.text : darkMode ? '#888' : '#666',
+              }}
+              resizeMode="contain"
+            />
+          );
+        },
+      })}
     >
       <Tab.Screen name="Test1" component={TestScreen1} />
-      <Tab.Screen name="Test2" component={TestScreen2} />
       <Tab.Screen name="SQLTest" component={SQLTest} />
       <Tab.Screen name="AITest" component={AITest} />
       <Tab.Screen name="Map" component={MapScreen} />
