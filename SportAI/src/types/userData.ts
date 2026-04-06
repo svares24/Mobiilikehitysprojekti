@@ -4,4 +4,5 @@ export type UserData = {
   weight: string;
   fitnessLevel: string;
   language: string;
+  goal: string;
 };
