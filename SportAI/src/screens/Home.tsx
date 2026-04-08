@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  Pressable,
+  StyleSheet,
+  TextInput,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -8,10 +15,15 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { DateData } from 'react-native-calendars';
 import { MarkedDates } from 'react-native-calendars/src/types';
 import { Route } from '../types';
-import { getRoutes, getRoutesByDate, deleteRoute } from '../util/dbHelper';
+import {
+  getRoutes,
+  getRoutesByDate,
+  deleteRoute,
+  changeRouteName,
+} from '../util/dbHelper';
 
 type RootTabParamList = {
-  Test1: undefined;
+  Map: undefined;
   Home: undefined;
 };
 
@@ -29,6 +41,8 @@ export default function HomeScreen({ navigation }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [routesForDay, setRoutesForDay] = useState<Route[]>([]);
   const [allRoutes, setAllRoutes] = useState<Route[]>([]);
+  const [editingRouteId, setEditingRouteId] = useState<number | null>(null);
+  const [newName, setNewName] = useState('');
 
   const refreshData = async () => {
     const result = await getRoutes(db);
@@ -103,7 +117,7 @@ export default function HomeScreen({ navigation }: Props) {
         <Pressable
           /*WIP*/
           style={[styles.button, { backgroundColor: theme.button }]}
-          onPress={() => navigation.navigate('Test1')}
+          onPress={() => navigation.navigate('Map')}
         >
           <Text style={{ color: theme.buttonText }}>Start</Text>
         </Pressable>
@@ -131,11 +145,67 @@ export default function HomeScreen({ navigation }: Props) {
               ) : (
                 /*else*/
                 routesForDay.map((route) => (
-                  <View key={route.route_id}>
-                    <Text>
-                      {route.name} , {(route.distance / 1000).toFixed(2)} km ,{' '}
-                      {Math.round(route.duration / 60)} min
-                    </Text>
+                  <View key={route.route_id} style={{ marginBottom: 10 }}>
+                    {editingRouteId === route.route_id ? (
+                      <>
+                        {' '}
+                        {/*Literally had to learn how to use fragment due to View errors */}
+                        <TextInput
+                          value={newName}
+                          onChangeText={setNewName}
+                          placeholder="New name"
+                        />
+                        <Pressable
+                          style={[
+                            styles.button,
+                            { backgroundColor: theme.button },
+                          ]}
+                          onPress={async () => {
+                            if (!newName.trim()) return;
+
+                            await changeRouteName(db, route.route_id, newName);
+
+                            setEditingRouteId(null);
+                            setNewName('');
+
+                            await refreshData();
+                            const updated = await getRoutesByDate(
+                              db,
+                              selectedDate!
+                            );
+                            setRoutesForDay(updated);
+                          }}
+                        >
+                          <Text style={{ color: theme.buttonText }}>Save</Text>
+                        </Pressable>
+                        <Pressable onPress={() => setEditingRouteId(null)}>
+                          <Text style={{ color: theme.text }}>Cancel</Text>
+                        </Pressable>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={{ color: theme.text }}>
+                          {route.name} , {(route.distance / 1000).toFixed(2)}{' '}
+                          km, {Math.round(route.duration / 60)} min
+                        </Text>
+
+                        <Pressable
+                          style={[
+                            styles.button,
+                            { backgroundColor: theme.button },
+                          ]}
+                          onPress={() => {
+                            setEditingRouteId(route.route_id);
+                            setNewName(route.name);
+                          }}
+                        >
+                          <Text style={{ color: theme.buttonText }}>
+                            Rename
+                          </Text>
+                        </Pressable>
+                      </>
+                    )}
+
                     <Pressable
                       style={[styles.button, { backgroundColor: theme.button }]}
                       onPress={async () => {
