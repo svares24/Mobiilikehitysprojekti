@@ -28,7 +28,7 @@ const AITest = () => {
     const query = `Context: You are a coach. 
     User profile: ${data} 
     Data of past runs: ${JSON.stringify(
-      result.map((r) => {
+      result.slice(-7).map((r) => {
         return { ...r, created: new Date(r.created) };
       })
     )} duration is in seconds distance in meters. Current date is ${new Date()}. 
