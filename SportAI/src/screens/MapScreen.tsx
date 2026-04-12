@@ -5,6 +5,7 @@ import * as Location from 'expo-location';
 import { Coords } from '../types/coords';
 import { useSQLiteContext } from 'expo-sqlite';
 import { addCompleteRoute } from '../util/dbHelper';
+/*import { useRoute, RouteProp } from '@react-navigation/native';*/
 
 const html = `
 <!DOCTYPE html>
@@ -37,7 +38,14 @@ const html = `
 </body>
 </html>
 `;
+/*
+type RootTabParamList = {
+  Map: { start?: boolean };
+  Home: undefined;
+};
 
+type MapRouteProp = RouteProp<RootTabParamList, 'Map'>;
+*/
 export default function MapScreen() {
   const webviewRef = useRef<WebView>(null);
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -46,7 +54,9 @@ export default function MapScreen() {
   const [locationArray, setLocationArray] = useState<Coords[][]>([[]]);
   const [totalDistance, setTotalDistance] = useState(0);
   const db = useSQLiteContext();
-
+  /*
+  const route = useRoute<MapRouteProp>();
+  */
   const startTrip = () => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -82,6 +92,14 @@ export default function MapScreen() {
   const saveTrip = async () => {
     await addCompleteRoute(db, 'Test', locationArray[0]);
   };
+
+  /*
+  useEffect(() => {
+    if (route.params?.start) {
+      startTrip();
+    }
+  }, [route.params]);
+  */
 
   useEffect(() => {
     if (location) {
