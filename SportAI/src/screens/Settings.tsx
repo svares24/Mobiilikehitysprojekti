@@ -48,19 +48,36 @@ export default function SettingsScreen() {
   const [editingField, setEditingField] = useState<EditableField | null>(null);
 
   const inputRef = useRef<TextInput>(null);
-
   const [isCustomGoal, setIsCustomGoal] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       const data = await AsyncStorage.getItem('userData');
-      if (data) setUser(JSON.parse(data));
+      if (data) {
+        const parsed = JSON.parse(data);
+
+        setUser({
+          ...parsed,
+          height: parsed.height?.replace(/[^0-9]/g, '') || '',
+          weight: parsed.weight?.replace(/[^0-9]/g, '') || '',
+        });
+      }
     };
     load();
   }, []);
 
   useEffect(() => {
-    AsyncStorage.setItem('userData', JSON.stringify(user));
+    const save = async () => {
+      const formattedUser = {
+        ...user,
+        height: user.height ? `${user.height} cm` : '',
+        weight: user.weight ? `${user.weight} kg` : '',
+      };
+
+      await AsyncStorage.setItem('userData', JSON.stringify(formattedUser));
+    };
+
+    save();
   }, [user]);
 
   useEffect(() => {
