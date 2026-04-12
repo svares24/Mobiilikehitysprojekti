@@ -23,7 +23,7 @@ import {
 } from '../util/dbHelper';
 
 type RootTabParamList = {
-  Map: undefined;
+  Map: { start?: boolean };
   Home: undefined;
 };
 
@@ -117,7 +117,7 @@ export default function HomeScreen({ navigation }: Props) {
         <Pressable
           /*WIP*/
           style={[styles.button, { backgroundColor: theme.button }]}
-          onPress={() => navigation.navigate('Map')}
+          onPress={() => navigation.navigate('Map', { start: true })}
         >
           <Text style={{ color: theme.buttonText }}>Start</Text>
         </Pressable>
@@ -148,7 +148,6 @@ export default function HomeScreen({ navigation }: Props) {
                   <View key={route.route_id} style={{ marginBottom: 10 }}>
                     {editingRouteId === route.route_id ? (
                       <>
-                        {' '}
                         {/*Literally had to learn how to use fragment due to View errors */}
                         <TextInput
                           value={newName}
