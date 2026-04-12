@@ -15,6 +15,7 @@ import { getRoutes } from '../util/dbHelper';
 import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
 
 const AITest = () => {
+  const model = 'gemma-3-27b-it';
   const { theme } = useTheme();
   const [response, setResponse] = useState<string | undefined>('');
   const [customPrompt, setCustomPrompt] = useState<string>('');
@@ -44,7 +45,7 @@ const AITest = () => {
     setResponse('Loading');
 
     const result = AI.models.generateContent({
-      model: 'gemma-3-27b-it',
+      model: model,
       contents: await generateQuery(db),
     });
 
@@ -68,7 +69,7 @@ const AITest = () => {
     console.log(finalPrompt);
 
     const result = AI.models.generateContent({
-      model: 'gemma-3-27b-it',
+      model: model,
       contents: finalPrompt,
     });
 
