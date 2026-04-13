@@ -38,7 +38,7 @@ export const backUp = async (db: SQLiteDatabase, name: string) => {
   const newPath = `${Paths.document.uri}SQLite/${name}`;
   const n = new File(newPath);
   const shm = new File(`${newPath}-shm`);
-  const wal = new File(`${newPath}-shm`);
+  const wal = new File(`${newPath}-wal`);
 
   if (n.exists) n.delete();
   if (shm.exists) shm.delete();
@@ -63,7 +63,7 @@ export const loadBackUp = async (
   const backup = new File(backupPath);
   const orig = new File(dbPath);
   const shm = new File(`${dbPath}-shm`);
-  const wal = new File(`${dbPath}-shm`);
+  const wal = new File(`${dbPath}-wal`);
 
   if (orig.exists) orig.delete();
   if (shm.exists) shm.delete();
