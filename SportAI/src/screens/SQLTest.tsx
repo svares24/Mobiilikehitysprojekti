@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Point, Route } from '../types';
 import { useDbReset } from '../context/dbReset';
+import { Directory, Paths } from 'expo-file-system';
 
 const SQLTest = () => {
   const db = useSQLiteContext();
@@ -84,6 +85,14 @@ const SQLTest = () => {
         title="Import"
         onPress={async () => {
           await loadBackUp(db, 'test.db', reset);
+        }}
+      ></Button>
+      <Button
+        title="Files"
+        onPress={() => {
+          console.log(
+            new Directory(`${Paths.document.uri}SQLite/`).listAsRecords()
+          );
         }}
       ></Button>
       <Text>Routes</Text>

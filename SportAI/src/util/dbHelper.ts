@@ -35,7 +35,17 @@ export const createTables = async (db: SQLiteDatabase) => {
 };
 
 export const backUp = async (db: SQLiteDatabase, name: string) => {
+  const newPath = `${Paths.document.uri}SQLite/${name}`;
+  const n = new File(newPath);
+  const shm = new File(`${newPath}-shm`);
+  const wal = new File(`${newPath}-shm`);
+
+  if (n.exists) n.delete();
+  if (shm.exists) shm.delete();
+  if (wal.exists) wal.delete();
+
   const newDB = await openDatabaseAsync(name);
+
   await backupDatabaseAsync({ sourceDatabase: db, destDatabase: newDB });
   console.log('Backed up');
   await newDB.closeAsync();
@@ -52,11 +62,12 @@ export const loadBackUp = async (
   console.log(dbPath, backupPath);
   const backup = new File(backupPath);
   const orig = new File(dbPath);
-  try {
-    orig.delete();
-  } catch {
-    console.log("File doesn't exist");
-  }
+  const shm = new File(`${dbPath}-shm`);
+  const wal = new File(`${dbPath}-shm`);
+
+  if (orig.exists) orig.delete();
+  if (shm.exists) shm.delete();
+  if (wal.exists) wal.delete();
   backup.copy(orig);
   //backup.delete();
   resetter();
