@@ -9,6 +9,9 @@ import { useTheme } from '../theme/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PauseIcon from '../../icons/pause.png';
 
+/*import { useRoute, RouteProp } from '@react-navigation/native';*/
+
+
 const html = `
 <!DOCTYPE html>
 <html>
@@ -38,7 +41,14 @@ const html = `
 </body>
 </html>
 `;
+/*
+type RootTabParamList = {
+  Map: { start?: boolean };
+  Home: undefined;
+};
 
+type MapRouteProp = RouteProp<RootTabParamList, 'Map'>;
+*/
 export default function MapScreen() {
   const webviewRef = useRef<WebView>(null);
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -50,10 +60,13 @@ export default function MapScreen() {
   const [watchPosition, setWatchPosition] = useState<Location.LocationSubscription | null>(null);
   const db = useSQLiteContext();
 
+
   const startTrip = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return;
-
+  /*
+  const route = useRoute<MapRouteProp>();
+  */
     setWatchPosition(await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.BestForNavigation,
@@ -85,7 +98,6 @@ export default function MapScreen() {
   const saveTrip = async () => {
     await addCompleteRoute(db, 'Test', locationArray[0]);
   };
-
 
   useEffect(() => {
     if (location) {

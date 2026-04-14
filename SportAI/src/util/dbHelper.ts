@@ -1,6 +1,12 @@
-import { SQLiteDatabase, SQLiteRunResult } from 'expo-sqlite';
+import {
+  SQLiteDatabase,
+  SQLiteRunResult,
+  backupDatabaseAsync,
+  openDatabaseAsync,
+} from 'expo-sqlite';
 import { Coords, Point, Route } from '../types';
 import { getDuration, getTotalDistance } from './coordCalculations';
+import { File, Paths } from 'expo-file-system';
 
 export const createTables = async (db: SQLiteDatabase) => {
   //quick version check for when schema changes
@@ -26,6 +32,45 @@ export const createTables = async (db: SQLiteDatabase) => {
     'CREATE TABLE IF NOT EXISTS point (point_id INTEGER PRIMARY KEY AUTOINCREMENT, route_id INTEGER NOT NULL, lat REAL NOT NULL, lon REAL NOT NULL, alt REAL NOT NULL, time INTEGER NOT NULL, FOREIGN KEY (route_id) REFERENCES route(route_id) ON DELETE CASCADE);'
   );
   await db.sql`INSERT OR REPLACE INTO version (id,v) VALUES (1,${version});`;
+};
+
+export const backUp = async (db: SQLiteDatabase, name: string) => {
+  const newPath = `${Paths.document.uri}SQLite/${name}`;
+  const n = new File(newPath);
+  const shm = new File(`${newPath}-shm`);
+  const wal = new File(`${newPath}-wal`);
+
+  if (n.exists) n.delete();
+  if (shm.exists) shm.delete();
+  if (wal.exists) wal.delete();
+
+  const newDB = await openDatabaseAsync(name);
+
+  await backupDatabaseAsync({ sourceDatabase: db, destDatabase: newDB });
+  console.log('Backed up');
+  await newDB.closeAsync();
+};
+
+export const loadBackUp = async (
+  db: SQLiteDatabase,
+  name: string,
+  resetter: () => void
+) => {
+  await db.closeAsync();
+  const dbPath = `${Paths.document.uri}SQLite/route.db`;
+  const backupPath = `${Paths.document.uri}SQLite/${name}`;
+  console.log(dbPath, backupPath);
+  const backup = new File(backupPath);
+  const orig = new File(dbPath);
+  const shm = new File(`${dbPath}-shm`);
+  const wal = new File(`${dbPath}-wal`);
+
+  if (orig.exists) orig.delete();
+  if (shm.exists) shm.delete();
+  if (wal.exists) wal.delete();
+  backup.copy(orig);
+  //backup.delete();
+  resetter();
 };
 
 export const addCompleteRoute = async (
