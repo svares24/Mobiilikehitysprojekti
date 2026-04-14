@@ -10,6 +10,7 @@ import {
 } from '../util/dbHelper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Point, Route } from '../types';
+import { auth } from '../util/firebase';
 
 const SQLTest = () => {
   const db = useSQLiteContext();
@@ -28,6 +29,7 @@ const SQLTest = () => {
   }, []);
   return (
     <SafeAreaView style={styles.container}>
+      <Text>Current user: {auth.currentUser?.email}</Text>
       <Button
         title="Test1"
         onPress={async () => {

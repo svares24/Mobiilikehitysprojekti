@@ -7,7 +7,8 @@ import Settings from '../screens/Settings';
 import MapScreen from '../screens/MapScreen';
 import { useTheme } from '../theme/ThemeContext';
 import AITest from '../screens/AITest';
-
+import SignUp from '../screens/SignUp';
+import SignIn from '../screens/SignIn';
 import sqlIcon from '../../icons/sql.png';
 import speechbubbleIcon from '../../icons/speechbubble.png';
 import mapIcon from '../../icons/map.png';
@@ -21,6 +22,8 @@ export type RootTabParamList = {
   Map: undefined;
   Home: undefined;
   Settings: undefined;
+  SignUp: undefined;
+  SignIn: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -89,6 +92,8 @@ export default function NavigationBar() {
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Settings" component={Settings} />
+      <Tab.Screen name="SignUp" component={SignUp} />
+      <Tab.Screen name="SignIn" component={SignIn} />
     </Tab.Navigator>
   );
 }

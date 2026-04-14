@@ -1,10 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
-import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, Image } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Location from 'expo-location';
 import { Coords } from '../types/coords';
 import { useSQLiteContext } from 'expo-sqlite';
 import { addCompleteRoute } from '../util/dbHelper';
+import { useTheme } from '../theme/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import PauseIcon from '../../icons/pause.png';
 
 const html = `
 <!DOCTYPE html>
@@ -18,8 +21,6 @@ const html = `
     html, body, #map {
       height: 100%;
       width: 100%;
-      margin: 0;
-      padding: 0;
     }
   </style>
 </head>
@@ -29,7 +30,7 @@ const html = `
     window.map = L.map('map').setView([65,25.5], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      
+      userAgent: 'SportAI/1.0 svares24@students.oamk.fi',
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(window.map);
     let circleMarker = L.circleMarker([65,25.5], {radius: 6, color: 'white', fill: true, fillColor: '#0096FF', fillOpacity: 1, weight: 2}).bringToFront().addTo(window.map);
@@ -43,45 +44,48 @@ export default function MapScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+  const { theme } = useTheme();
   const [locationArray, setLocationArray] = useState<Coords[][]>([[]]);
   const [totalDistance, setTotalDistance] = useState(0);
+  const [watchPosition, setWatchPosition] = useState<Location.LocationSubscription | null>(null);
   const db = useSQLiteContext();
 
-  const startTrip = () => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
+  const startTrip = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') return;
 
-      await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          distanceInterval: 5, // distance interval is the minimum distance between updates in meters
-        },
-        (loc) => {
-          setLocation(loc);
-          setLocationArray((prev) => [
-            [
-              ...prev[0],
-              {
-                lat: loc.coords.latitude,
-                lon: loc.coords.longitude,
-                alt: loc.coords.altitude ?? 0,
-                time: new Date(loc.timestamp),
-              },
-            ],
-          ]);
-        }
-      );
-    })();
+    setWatchPosition(await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.BestForNavigation,
+        distanceInterval: 5,
+      },
+      (loc) => {
+        setLocation(loc);
+        setLocationArray((prev) => [
+          [
+            ...prev[0],
+            {
+              lat: loc.coords.latitude,
+              lon: loc.coords.longitude,
+              alt: loc.coords.altitude ?? 0,
+              time: new Date(loc.timestamp),
+            },
+          ],
+        ]);
+      }
+    ));
   };
-  // long press to stop trip
+
   const stopTrip = () => {
+    watchPosition?.remove();
+    setWatchPosition(null);
     saveTrip();
   };
 
   const saveTrip = async () => {
     await addCompleteRoute(db, 'Test', locationArray[0]);
   };
+
 
   useEffect(() => {
     if (location) {
@@ -97,7 +101,7 @@ export default function MapScreen() {
   }, [location]);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <WebView
         source={{ html }}
         ref={webviewRef}
@@ -105,17 +109,31 @@ export default function MapScreen() {
         javaScriptEnabled
         domStorageEnabled
       />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={startTrip}
-        onLongPress={stopTrip}
-      >
-        <Text style={styles.buttonText}>▶</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={[styles.bottomContainer, { backgroundColor: theme.background }]}>
+        
+        <Text style={styles.textInput}>{totalDistance.toFixed(2)} m</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={startTrip}
+          onLongPress={stopTrip}
+        >
+         <Image
+            source={PauseIcon}
+            style={{
+                width: 62,
+                height: 62,
+                alignSelf: 'center',
+            }
+          }
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        <Text style={styles.textInput}>timer</Text>
+      </View>
+    </SafeAreaView>
   );
 }
-
+// ▶ ⏸
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -123,16 +141,30 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
-  button: {
-    position: 'absolute',
-    bottom: 30,
-    left: 150,
-    backgroundColor: 'lightblue',
+  bottomContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
     padding: 10,
-    borderRadius: 400,
+    backgroundColor: 'white',
   },
-  buttonText: {
-    fontSize: 40,
+  button: {
+    textAlign: 'center',
+    height: 50,
+    width: 50,
+    backgroundColor: 'white',
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textInput: {
+    width: 120,
+    height: 40,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    padding: 5,
+    margin: 5,
     color: 'white',
   },
 });
