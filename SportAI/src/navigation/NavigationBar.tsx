@@ -13,6 +13,8 @@ import speechbubbleIcon from '../../icons/speechbubble.png';
 import mapIcon from '../../icons/map.png';
 import homepageIcon from '../../icons/homepage.png';
 import settingsIcon from '../../icons/settings.png';
+import activitiesIcon from '../../icons/column-chart.png';
+import Activities from '../screens/Activities';
 
 export type RootTabParamList = {
   Test1: undefined;
@@ -20,6 +22,7 @@ export type RootTabParamList = {
   AITest: undefined;
   Map: undefined;
   Home: undefined;
+  Activities: undefined;
   Settings: undefined;
 };
 
@@ -65,6 +68,9 @@ export default function NavigationBar() {
             case 'Settings':
               icon = settingsIcon;
               break;
+            case 'Activities':
+              icon = activitiesIcon;
+              break;
             default:
               return null;
           }
@@ -88,6 +94,7 @@ export default function NavigationBar() {
       <Tab.Screen name="AITest" component={AITest} />
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Activities" component={Activities} />
       <Tab.Screen name="Settings" component={Settings} />
     </Tab.Navigator>
   );

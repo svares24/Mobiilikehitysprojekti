@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import {
   deleteRoute,
   changeRouteName,
 } from '../util/dbHelper';
+import { useFocusEffect } from '@react-navigation/native';
 
 type RootTabParamList = {
   Map: { start?: boolean };
@@ -49,13 +50,15 @@ export default function HomeScreen({ navigation }: Props) {
     setAllRoutes(result);
   };
 
-  useEffect(() => {
-    const loadRoutes = async () => {
-      const result = await getRoutes(db);
-      setAllRoutes(result);
-    };
-    loadRoutes();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const loadRoutes = async () => {
+        const result = await getRoutes(db);
+        setAllRoutes(result);
+      };
+      loadRoutes();
+    }, [])
+  );
 
   const formatDate = (timestamp: number) => {
     /* time to yyyy-mm-dd */
@@ -237,7 +240,6 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 25,
   },
   modalOverlay: {
     flex: 1,

@@ -1,5 +1,5 @@
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button, FlatList, StyleSheet, Text, View } from 'react-native';
 import {
   addCompleteRoute,
@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Point, Route } from '../types';
 import { useDbReset } from '../context/dbReset';
 import { Directory, Paths } from 'expo-file-system';
+import { useFocusEffect } from '@react-navigation/native';
 
 const SQLTest = () => {
   const db = useSQLiteContext();
@@ -28,9 +29,11 @@ const SQLTest = () => {
     setPoints(pointResult);
   };
 
-  useEffect(() => {
-    refreshData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [])
+  );
   return (
     <SafeAreaView style={styles.container}>
       <Button
