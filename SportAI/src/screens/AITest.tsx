@@ -15,6 +15,7 @@ import { getRoutes } from '../util/dbHelper';
 import { SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
 
 const AITest = () => {
+  const model = 'gemma-3-27b-it';
   const { theme } = useTheme();
   const [response, setResponse] = useState<string | undefined>('');
   const [customPrompt, setCustomPrompt] = useState<string>('');
@@ -25,9 +26,15 @@ const AITest = () => {
   const generateQuery = async (db: SQLiteDatabase) => {
     const result = await getRoutes(db);
     const data = await AsyncStorage.getItem('userData');
-    const query = `Here are my past runs: ${JSON.stringify(
-      result
-    )} How long should my run be today? Respond only with the length, 0 if I should take a break today. My goal is to improve. Here is some information about me: ${data}`;
+    const query = `Context: You are a coach. 
+    User profile: ${data} 
+    Data of past runs: ${JSON.stringify(
+      result.slice(-7).map((r) => {
+        return { ...r, created: new Date(r.created) };
+      })
+    )} duration is in seconds distance in meters. Current date is ${new Date()}. 
+    Task: Based on my goal and past runs calculate the ideal distance for today's run. 
+    Output: Respond only with the distance in meters (numerical value) rounded to 100 meters. Return 0 if a break is needed.`;
 
     console.log(query);
 
@@ -38,7 +45,7 @@ const AITest = () => {
     setResponse('Loading');
 
     const result = AI.models.generateContent({
-      model: 'gemma-3-27b-it',
+      model: model,
       contents: await generateQuery(db),
     });
 
@@ -62,7 +69,7 @@ const AITest = () => {
     console.log(finalPrompt);
 
     const result = AI.models.generateContent({
-      model: 'gemma-3-27b-it',
+      model: model,
       contents: finalPrompt,
     });
 
