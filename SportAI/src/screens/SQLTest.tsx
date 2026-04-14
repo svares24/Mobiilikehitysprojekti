@@ -3,16 +3,21 @@ import { useEffect, useState } from 'react';
 import { Button, FlatList, StyleSheet, Text, View } from 'react-native';
 import {
   addCompleteRoute,
+  backUp,
   changeRouteName,
   deleteRoute,
   getAllPoints,
   getRoutes,
+  loadBackUp,
 } from '../util/dbHelper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Point, Route } from '../types';
+import { useDbReset } from '../context/dbReset';
+import { Directory, Paths } from 'expo-file-system';
 
 const SQLTest = () => {
   const db = useSQLiteContext();
+  const reset = useDbReset();
   const [routes, setRoutes] = useState<Route[]>([]);
   const [points, setPoints] = useState<Point[]>([]);
 
@@ -68,6 +73,26 @@ const SQLTest = () => {
             { lat: 10.01, lon: 10.01, alt: 10.01, time: new Date(20) },
           ]);
           refreshData();
+        }}
+      ></Button>
+      <Button
+        title="Backup"
+        onPress={async () => {
+          await backUp(db, 'test.db');
+        }}
+      ></Button>
+      <Button
+        title="Import"
+        onPress={async () => {
+          await loadBackUp(db, 'test.db', reset);
+        }}
+      ></Button>
+      <Button
+        title="Files"
+        onPress={() => {
+          console.log(
+            new Directory(`${Paths.document.uri}SQLite/`).listAsRecords()
+          );
         }}
       ></Button>
       <Text>Routes</Text>

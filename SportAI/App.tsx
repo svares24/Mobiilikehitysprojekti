@@ -1,13 +1,12 @@
 import 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import NavigationBar from './src/navigation/NavigationBar';
-import { SQLiteProvider } from 'expo-sqlite';
-import { createTables } from './src/util/dbHelper';
 import { ThemeProvider } from './src/theme/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import FirstTimeScreen from './src/screens/FirstTimeScreen';
+import { DatabaseProvider } from './src/context/dbReset';
 
 function AppInner() {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
@@ -51,9 +50,9 @@ function AppInner() {
 export default function App() {
   return (
     <ThemeProvider>
-      <SQLiteProvider databaseName="route.db" onInit={createTables}>
+      <DatabaseProvider>
         <AppInner />
-      </SQLiteProvider>
+      </DatabaseProvider>
     </ThemeProvider>
   );
 }
