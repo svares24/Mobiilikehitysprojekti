@@ -1,5 +1,5 @@
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button, FlatList, StyleSheet, Text, View } from 'react-native';
 import {
   addCompleteRoute,
@@ -15,6 +15,7 @@ import { Point, Route } from '../types';
 import { auth } from '../util/firebase';
 import { useDbReset } from '../context/dbReset';
 import { Directory, Paths } from 'expo-file-system';
+import { useFocusEffect } from '@react-navigation/native';
 
 const SQLTest = () => {
   const db = useSQLiteContext();
@@ -29,9 +30,11 @@ const SQLTest = () => {
     setPoints(pointResult);
   };
 
-  useEffect(() => {
-    refreshData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [])
+  );
   return (
     <SafeAreaView style={styles.container}>
       <Text>Current user: {auth.currentUser?.email}</Text>
