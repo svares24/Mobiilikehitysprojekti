@@ -12,6 +12,7 @@ import {
 } from '../util/dbHelper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Point, Route } from '../types';
+import { auth } from '../util/firebase';
 import { useDbReset } from '../context/dbReset';
 import { Directory, Paths } from 'expo-file-system';
 
@@ -33,6 +34,7 @@ const SQLTest = () => {
   }, []);
   return (
     <SafeAreaView style={styles.container}>
+      <Text>Current user: {auth.currentUser?.email}</Text>
       <Button
         title="Test1"
         onPress={async () => {
