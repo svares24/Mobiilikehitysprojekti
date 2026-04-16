@@ -151,6 +151,15 @@ export default function HomeScreen({ navigation }: Props) {
                     {editingRouteId === route.route_id ? (
                       <>
                         <TextInput
+                          placeholderTextColor={theme.inputText}
+                          style={[
+                            styles.input,
+                            {
+                              backgroundColor: theme.inputBackground,
+                              color: theme.inputText,
+                              borderColor: theme.inputBorder,
+                            },
+                          ]}
                           value={newName}
                           onChangeText={setNewName}
                           placeholder="New name"
@@ -178,8 +187,16 @@ export default function HomeScreen({ navigation }: Props) {
                         >
                           <Text style={{ color: theme.buttonText }}>Save</Text>
                         </Pressable>
-                        <Pressable onPress={() => setEditingRouteId(null)}>
-                          <Text style={{ color: theme.text }}>Cancel</Text>
+                        <Pressable
+                          style={[
+                            styles.button,
+                            { backgroundColor: theme.button },
+                          ]}
+                          onPress={() => setEditingRouteId(null)}
+                        >
+                          <Text style={{ color: theme.buttonText }}>
+                            Cancel
+                          </Text>
                         </Pressable>
                       </>
                     ) : (
@@ -269,5 +286,10 @@ const styles = StyleSheet.create({
   },
   calendar: {
     padding: 10,
+  },
+  input: {
+    borderWidth: 1,
+    padding: 10,
+    width: 200,
   },
 });
