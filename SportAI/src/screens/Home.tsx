@@ -77,7 +77,7 @@ export default function HomeScreen({ navigation }: Props) {
       const date = formatDate(r.created);
       marks[date] = { marked: true };
     });
-    // :(
+
     if (selectedDate) {
       marks[selectedDate] = {
         ...(marks[selectedDate] || {}),
@@ -94,7 +94,7 @@ export default function HomeScreen({ navigation }: Props) {
     const routes = await getRoutesByDate(db, date);
     setRoutesForDay(routes);
   };
-  /*changed to map the modal instead*/
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
@@ -118,7 +118,6 @@ export default function HomeScreen({ navigation }: Props) {
           markedDates={getMarkedDates()}
         />
         <Pressable
-          /*WIP*/
           style={[styles.button, { backgroundColor: theme.button }]}
           onPress={() => navigation.navigate('Map', { start: true })}
         >
@@ -151,7 +150,6 @@ export default function HomeScreen({ navigation }: Props) {
                   <View key={route.route_id} style={{ marginBottom: 10 }}>
                     {editingRouteId === route.route_id ? (
                       <>
-                        {/*Literally had to learn how to use fragment due to View errors */}
                         <TextInput
                           value={newName}
                           onChangeText={setNewName}
