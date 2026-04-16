@@ -77,7 +77,7 @@ export default function HomeScreen({ navigation }: Props) {
       const date = formatDate(r.created);
       marks[date] = { marked: true };
     });
-    // :(
+
     if (selectedDate) {
       marks[selectedDate] = {
         ...(marks[selectedDate] || {}),
@@ -94,7 +94,7 @@ export default function HomeScreen({ navigation }: Props) {
     const routes = await getRoutesByDate(db, date);
     setRoutesForDay(routes);
   };
-  /*changed to map the modal instead*/
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.background }]}
@@ -118,7 +118,6 @@ export default function HomeScreen({ navigation }: Props) {
           markedDates={getMarkedDates()}
         />
         <Pressable
-          /*WIP*/
           style={[styles.button, { backgroundColor: theme.button }]}
           onPress={() => navigation.navigate('Map', { start: true })}
         >
@@ -151,8 +150,16 @@ export default function HomeScreen({ navigation }: Props) {
                   <View key={route.route_id} style={{ marginBottom: 10 }}>
                     {editingRouteId === route.route_id ? (
                       <>
-                        {/*Literally had to learn how to use fragment due to View errors */}
                         <TextInput
+                          placeholderTextColor={theme.inputText}
+                          style={[
+                            styles.input,
+                            {
+                              backgroundColor: theme.inputBackground,
+                              color: theme.inputText,
+                              borderColor: theme.inputBorder,
+                            },
+                          ]}
                           value={newName}
                           onChangeText={setNewName}
                           placeholder="New name"
@@ -180,8 +187,16 @@ export default function HomeScreen({ navigation }: Props) {
                         >
                           <Text style={{ color: theme.buttonText }}>Save</Text>
                         </Pressable>
-                        <Pressable onPress={() => setEditingRouteId(null)}>
-                          <Text style={{ color: theme.text }}>Cancel</Text>
+                        <Pressable
+                          style={[
+                            styles.button,
+                            { backgroundColor: theme.button },
+                          ]}
+                          onPress={() => setEditingRouteId(null)}
+                        >
+                          <Text style={{ color: theme.buttonText }}>
+                            Cancel
+                          </Text>
                         </Pressable>
                       </>
                     ) : (
@@ -271,5 +286,10 @@ const styles = StyleSheet.create({
   },
   calendar: {
     padding: 10,
+  },
+  input: {
+    borderWidth: 1,
+    padding: 10,
+    width: 200,
   },
 });

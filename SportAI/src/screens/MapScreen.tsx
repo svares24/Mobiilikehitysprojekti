@@ -9,9 +9,6 @@ import { useTheme } from '../theme/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PauseIcon from '../../icons/pause.png';
 
-/*import { useRoute, RouteProp } from '@react-navigation/native';*/
-
-
 const html = `
 <!DOCTYPE html>
 <html>
@@ -41,14 +38,7 @@ const html = `
 </body>
 </html>
 `;
-/*
-type RootTabParamList = {
-  Map: { start?: boolean };
-  Home: undefined;
-};
 
-type MapRouteProp = RouteProp<RootTabParamList, 'Map'>;
-*/
 export default function MapScreen() {
   const webviewRef = useRef<WebView>(null);
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -57,36 +47,36 @@ export default function MapScreen() {
   const { theme } = useTheme();
   const [locationArray, setLocationArray] = useState<Coords[][]>([[]]);
   const [totalDistance, setTotalDistance] = useState(0);
-  const [watchPosition, setWatchPosition] = useState<Location.LocationSubscription | null>(null);
+  const [watchPosition, setWatchPosition] =
+    useState<Location.LocationSubscription | null>(null);
   const db = useSQLiteContext();
-
 
   const startTrip = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return;
-  /*
-  const route = useRoute<MapRouteProp>();
-  */
-    setWatchPosition(await Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.BestForNavigation,
-        distanceInterval: 5,
-      },
-      (loc) => {
-        setLocation(loc);
-        setLocationArray((prev) => [
-          [
-            ...prev[0],
-            {
-              lat: loc.coords.latitude,
-              lon: loc.coords.longitude,
-              alt: loc.coords.altitude ?? 0,
-              time: new Date(loc.timestamp),
-            },
-          ],
-        ]);
-      }
-    ));
+
+    setWatchPosition(
+      await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.BestForNavigation,
+          distanceInterval: 5,
+        },
+        (loc) => {
+          setLocation(loc);
+          setLocationArray((prev) => [
+            [
+              ...prev[0],
+              {
+                lat: loc.coords.latitude,
+                lon: loc.coords.longitude,
+                alt: loc.coords.altitude ?? 0,
+                time: new Date(loc.timestamp),
+              },
+            ],
+          ]);
+        }
+      )
+    );
   };
 
   const stopTrip = () => {
@@ -113,7 +103,9 @@ export default function MapScreen() {
   }, [location]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
       <WebView
         source={{ html }}
         ref={webviewRef}
@@ -121,22 +113,22 @@ export default function MapScreen() {
         javaScriptEnabled
         domStorageEnabled
       />
-      <View style={[styles.bottomContainer, { backgroundColor: theme.background }]}>
-        
+      <View
+        style={[styles.bottomContainer, { backgroundColor: theme.background }]}
+      >
         <Text style={styles.textInput}>{totalDistance.toFixed(2)} m</Text>
         <TouchableOpacity
           style={styles.button}
           onPress={startTrip}
           onLongPress={stopTrip}
         >
-         <Image
+          <Image
             source={PauseIcon}
             style={{
-                width: 62,
-                height: 62,
-                alignSelf: 'center',
-            }
-          }
+              width: 62,
+              height: 62,
+              alignSelf: 'center',
+            }}
             resizeMode="contain"
           />
         </TouchableOpacity>
