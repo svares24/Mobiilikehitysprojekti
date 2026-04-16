@@ -8,12 +8,16 @@ import {
   Pressable,
   Modal,
   FlatList,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeContext';
 import { UserData } from '../types';
 import { DeviceEventEmitter } from 'react-native';
+import { useSQLiteContext } from 'expo-sqlite';
+import { backUp, loadBackUp } from '../util/dbHelper';
+import { useDbReset } from '../context/dbReset';
 
 type EditableField =
   | 'age'
@@ -49,6 +53,50 @@ export default function SettingsScreen() {
 
   const inputRef = useRef<TextInput>(null);
   const [isCustomGoal, setIsCustomGoal] = useState(false);
+
+  const db = useSQLiteContext();
+  const reset = useDbReset();
+
+  const confirmBackup = () => {
+    Alert.alert('Back up data', 'Are you sure you want to back up your data?', [
+      { text: 'No', style: 'cancel' },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          console.log('backing up data');
+          try {
+            await backUp(db, 'test.db');
+            console.log('Backup success');
+            Alert.alert('Success!');
+          } catch (error) {
+            console.log('Backup error:', error);
+            Alert.alert('Error, something went wrong');
+          }
+        },
+      },
+    ]);
+  };
+
+  const confirmRestore = () => {
+    Alert.alert('Restore data', 'Are you sure you want to restore data?', [
+      { text: 'No', style: 'cancel' },
+      {
+        text: 'Yes',
+        style: 'destructive',
+        onPress: async () => {
+          console.log('restoring data');
+          try {
+            await loadBackUp(db, 'test.db', reset);
+            console.log('Restore success');
+            Alert.alert('Success!');
+          } catch (error) {
+            console.log('Restore error:', error);
+            Alert.alert('Error, something went wrong');
+          }
+        },
+      },
+    ]);
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -200,6 +248,26 @@ export default function SettingsScreen() {
             Language: {user.language}
           </Text>
         </Pressable>
+
+        <View style={backupRow}>
+          <Pressable
+            style={[btn, halfBtn, { backgroundColor: theme.button }]}
+            onPress={confirmBackup}
+          >
+            <Text style={{ color: theme.buttonText, textAlign: 'center' }}>
+              Back Up
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[btn, halfBtn, { backgroundColor: theme.button }]}
+            onPress={confirmRestore}
+          >
+            <Text style={{ color: theme.buttonText, textAlign: 'center' }}>
+              Restore
+            </Text>
+          </Pressable>
+        </View>
 
         <Text style={{ marginTop: 20, color: theme.text }}>
           App Version: 1.0.0
@@ -365,6 +433,18 @@ const row = {
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'center',
+};
+
+const backupRow = {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  gap: 12,
+  marginBottom: 12,
+};
+
+const halfBtn = {
+  flex: 1,
+  marginBottom: 0,
 };
 
 const overlay = {
