@@ -106,6 +106,22 @@ export const getRoutes = async (db: SQLiteDatabase): Promise<Route[]> => {
   return result;
 };
 
+export const getSortedRoutes = async (
+  db: SQLiteDatabase,
+  sort: string
+): Promise<Route[]> => {
+  switch (sort) {
+    case 'oldest':
+      return await db.sql<Route>`SELECT * FROM route ORDER BY created DESC;`;
+    case 'longest':
+      return await db.sql<Route>`SELECT * FROM route ORDER BY distance ASC;`;
+    case 'shortest':
+      return await db.sql<Route>`SELECT * FROM route ORDER BY distance DESC;`;
+    default:
+      return await db.sql<Route>`SELECT * FROM route ORDER BY created ASC;`;
+  }
+};
+
 export const getRoute = async (
   db: SQLiteDatabase,
   id: number
