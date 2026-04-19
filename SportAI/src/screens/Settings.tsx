@@ -18,6 +18,8 @@ import { DeviceEventEmitter } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { backUp, loadBackUp } from '../util/dbHelper';
 import { useDbReset } from '../context/dbReset';
+import { auth } from '../util/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 type EditableField =
   | 'age'
@@ -56,6 +58,8 @@ export default function SettingsScreen() {
 
   const db = useSQLiteContext();
   const reset = useDbReset();
+
+  const [email, setEmail] = useState<string | null>(null);
 
   const confirmBackup = () => {
     Alert.alert('Back up data', 'Are you sure you want to back up your data?', [
@@ -96,6 +100,22 @@ export default function SettingsScreen() {
         },
       },
     ]);
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setEmail(user?.email ?? null);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   useEffect(() => {
@@ -189,6 +209,19 @@ export default function SettingsScreen() {
         >
           Settings
         </Text>
+
+        <Pressable style={[btn, { backgroundColor: theme.button }]}>
+          <Text style={{ color: theme.buttonText }}>
+            {email ? `Logged in as: ${email}` : 'Not logged in'}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[btn, { backgroundColor: '#ff4444' }]}
+          onPress={handleLogout}
+        >
+          <Text style={{ color: theme.buttonText }}>Log out</Text>
+        </Pressable>
 
         <Pressable
           style={[btn, { backgroundColor: theme.button }]}
