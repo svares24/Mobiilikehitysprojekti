@@ -8,6 +8,7 @@ import { addCompleteRoute } from '../util/dbHelper';
 import { useTheme } from '../theme/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PauseIcon from '../../icons/pause.png';
+import PlayIcon from '../../icons/play.png';
 
 const html = `
 <!DOCTYPE html>
@@ -50,11 +51,36 @@ export default function MapScreen() {
   const [watchPosition, setWatchPosition] =
     useState<Location.LocationSubscription | null>(null);
   const db = useSQLiteContext();
+  const [time, setTime] = useState(130);
+  const [isTripActive, setIsTripActive] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startTrip = async () => {
+  const startTimer = (initialTime: number) => {
+    setTime(initialTime);
+    timerRef.current = setInterval(() => {
+      setTime((prevTime) => {
+        if (prevTime <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const startTrip = async (initialTime: number) => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return;
 
+    startTimer(initialTime);
+    setIsTripActive(true);
     setWatchPosition(
       await Location.watchPositionAsync(
         {
@@ -82,6 +108,8 @@ export default function MapScreen() {
   const stopTrip = () => {
     watchPosition?.remove();
     setWatchPosition(null);
+    stopTimer();
+    setIsTripActive(false);
     saveTrip();
   };
 
@@ -98,9 +126,16 @@ export default function MapScreen() {
         L.polyline(${JSON.stringify(locationArray[0].map((loc) => [loc.lat, loc.lon]))}, {color: 'blue'}).addTo(window.map);
       `);
       setTotalDistance(totalDistance + 5);
-      console.log(totalDistance);
     }
   }, [location]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <SafeAreaView
@@ -109,21 +144,22 @@ export default function MapScreen() {
       <WebView
         source={{ html }}
         ref={webviewRef}
-        style={styles.map}
+        style={styles.container}
         javaScriptEnabled
         domStorageEnabled
       />
       <View
         style={[styles.bottomContainer, { backgroundColor: theme.background }]}
       >
-        <Text style={styles.textInput}>{totalDistance.toFixed(2)} m</Text>
+        <Text style={[styles.textInput, { color: theme.text }]}>
+          {totalDistance} m
+        </Text>
         <TouchableOpacity
           style={styles.button}
-          onPress={startTrip}
-          onLongPress={stopTrip}
+          onPress={() => (isTripActive ? stopTrip() : startTrip(time))}
         >
           <Image
-            source={PauseIcon}
+            source={isTripActive ? PauseIcon : PlayIcon}
             style={{
               width: 62,
               height: 62,
@@ -132,17 +168,19 @@ export default function MapScreen() {
             resizeMode="contain"
           />
         </TouchableOpacity>
-        <Text style={styles.textInput}>timer</Text>
+        <Text style={[styles.textInput, { color: theme.text }]}>
+          {Math.floor(time / 60)
+            .toString()
+            .padStart(2, '0')}
+          :{(time % 60).toString().padStart(2, '0')}
+        </Text>
       </View>
     </SafeAreaView>
   );
 }
-// ▶ ⏸
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  map: {
     flex: 1,
   },
   bottomContainer: {
@@ -150,7 +188,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: 'white',
   },
   button: {
     textAlign: 'center',
@@ -162,13 +199,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   textInput: {
+    textAlign: 'center',
     width: 120,
     height: 40,
-    borderWidth: 1,
-    borderColor: 'gray',
     borderRadius: 5,
     padding: 5,
     margin: 5,
-    color: 'white',
+    fontSize: 26,
   },
 });

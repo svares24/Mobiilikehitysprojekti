@@ -3,11 +3,13 @@ import { Pressable, StyleSheet, View, Text, TextInput } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../util/firebase';
 import { useState } from 'react';
+import { useTheme } from '../theme/ThemeContext';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { theme } = useTheme();
 
   const signUp = async () => {
     if (password !== confirmPassword) {
@@ -23,31 +25,63 @@ export default function SignUp() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
+      <View style={styles.content}>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.inputBackground,
+              color: theme.inputText,
+              borderColor: theme.inputBorder,
+            },
+          ]}
           placeholder="Email"
+          placeholderTextColor={theme.inputText}
           value={email}
           onChangeText={setEmail}
           autoComplete="email"
         />
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.inputBackground,
+              color: theme.inputText,
+              borderColor: theme.inputBorder,
+            },
+          ]}
           placeholder="Password"
+          placeholderTextColor={theme.inputText}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.inputBackground,
+              color: theme.inputText,
+              borderColor: theme.inputBorder,
+            },
+          ]}
           placeholder="Confirm Password"
+          placeholderTextColor={theme.inputText}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
         />
-        <Pressable style={styles.button} onPress={signUp}>
-          <Text>Sign Up</Text>
+        <Pressable
+          style={[
+            styles.button,
+            { backgroundColor: theme.button, borderColor: theme.inputBorder },
+          ]}
+          onPress={signUp}
+        >
+          <Text style={{ color: theme.buttonText }}>Sign Up</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -58,8 +92,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
   input: {
-    alignSelf: 'center',
     width: '90%',
     borderWidth: 1,
     padding: 12,
@@ -67,11 +106,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    alignSelf: 'center',
-    width: '20%',
-    backgroundColor: 'lightblue',
+    width: '22%',
     padding: 14,
+    borderWidth: 1,
     borderRadius: 10,
-    alignItems: 'center',
   },
 });
