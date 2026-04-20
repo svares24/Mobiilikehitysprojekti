@@ -122,6 +122,15 @@ export const getSortedRoutes = async (
   }
 };
 
+export const getBounds = async (
+  db: SQLiteDatabase,
+  id: number
+): Promise<number[]> => {
+  const result =
+    await db.sql<number>`SELECT MAX(lat),MAX(lon),MIN(lat),MIN(lon) FROM point WHERE route_id == ${id};`.values();
+  return result[0];
+};
+
 export const getRoute = async (
   db: SQLiteDatabase,
   id: number

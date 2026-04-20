@@ -21,6 +21,7 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
+      "permissions": ["INTERNET"],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -28,12 +29,13 @@
     },
     "plugins": [
       "expo-sqlite",
-       [
+      [
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow this app to use your location."
         }
-      ]
+      ],
+      "@maplibre/maplibre-react-native"
     ]
   }
 }

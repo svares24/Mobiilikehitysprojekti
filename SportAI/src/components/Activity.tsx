@@ -1,6 +1,10 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Route } from '../types';
 import { useTheme } from '../theme/ThemeContext';
+import { useState } from 'react';
+import ActivityMap from './ActivityMap';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import ActivityStats from './ActivityStats';
 
 const styles = StyleSheet.create({
   container: {
@@ -22,63 +26,54 @@ const styles = StyleSheet.create({
   keys: {
     fontSize: 12,
   },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    fontSize: 18,
+    lineHeight: 20,
+  },
 });
 
 const Activity = ({ route }: { route: Route }) => {
   const { theme } = useTheme();
-
-  const formatDistance = (distance: number): string => {
-    return `${Math.round(distance / 10) / 100}km`;
-  };
-
-  const formatDuration = (duration: number): string => {
-    const hours = Math.floor(duration / 3600);
-    const minutes = Math.floor((duration % 3600) / 60);
-    const seconds = duration % 60;
-
-    if (hours > 0) {
-      return `${hours}:${minutes}'${seconds}`;
-    }
-
-    return `${minutes}'${seconds}`;
-  };
-
-  const formatSpeed = (speed: number): string => {
-    return `${Math.round(speed * 3.6 * 10) / 10}km/h`;
-  };
+  const [mapVisible, setMapVisible] = useState(false);
 
   return (
-    <Pressable
-      style={[styles.item, { backgroundColor: theme.calendarBackground }]}
-      onPress={() => console.log(`pressed ${route.route_id}`)}
-    >
-      <View style={{ marginBottom: 10 }}>
-        <Text style={[styles.title, { color: theme.text }]}>{route.name}</Text>
-        <Text style={[styles.keys, { color: theme.text }]}>
-          {new Date(route.created).toLocaleString('fi-FI')}
-        </Text>
-      </View>
-      <View style={{ flexDirection: 'row' }}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.keys, { color: theme.text }]}>Matka</Text>
-          <Text style={[styles.values, { color: theme.text }]}>
-            {formatDistance(route.distance)}
-          </Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.keys, { color: theme.text }]}>Kesto</Text>
-          <Text style={[styles.values, { color: theme.text }]}>
-            {formatDuration(route.duration)}
-          </Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.keys, { color: theme.text }]}>Keskinopeus</Text>
-          <Text style={[styles.values, { color: theme.text }]}>
-            {formatSpeed(route.distance / route.duration)}
-          </Text>
-        </View>
-      </View>
-    </Pressable>
+    <View>
+      <Pressable onPress={() => setMapVisible(true)}>
+        <ActivityStats route={route}></ActivityStats>
+      </Pressable>
+
+      <Modal
+        visible={mapVisible}
+        animationType="slide"
+        onRequestClose={() => setMapVisible(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+          <View style={{ flexDirection: 'row' }}>
+            <Pressable
+              style={[
+                styles.closeButton,
+                { backgroundColor: theme.calendarBackground, flex: 1 },
+              ]}
+              onPress={() => setMapVisible(false)}
+              hitSlop={8}
+            >
+              <Text style={[styles.closeButtonText, { color: theme.text }]}>
+                ×
+              </Text>
+            </Pressable>
+          </View>
+          <ActivityStats route={route}></ActivityStats>
+          <ActivityMap id={route.route_id}></ActivityMap>
+        </SafeAreaView>
+      </Modal>
+    </View>
   );
 };
 

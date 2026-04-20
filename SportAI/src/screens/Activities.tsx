@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 import { Route } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FlatList, View } from 'react-native';
+import { FlatList } from 'react-native';
 import Activity from '../components/Activity';
-import { getRoutes, getSortedRoutes } from '../util/dbHelper';
+import { getSortedRoutes } from '../util/dbHelper';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useTheme } from '../theme/ThemeContext';
 import { useFocusEffect } from '@react-navigation/native';
