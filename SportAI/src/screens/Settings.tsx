@@ -20,6 +20,11 @@ import { backUp, loadBackUp } from '../util/dbHelper';
 import { useDbReset } from '../context/dbReset';
 import { auth } from '../util/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+
+type RootStackParamList = {
+  Login: undefined;
+};
 
 type EditableField =
   | 'age'
@@ -49,6 +54,7 @@ export default function SettingsScreen() {
     goal: '',
   });
 
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { theme, darkMode, toggleDarkMode } = useTheme();
   const [showPreview, setShowPreview] = useState(false);
   const [editingField, setEditingField] = useState<EditableField | null>(null);
@@ -180,6 +186,14 @@ export default function SettingsScreen() {
     setUser((prev) => ({ ...prev, goal: value }));
   };
 
+  const checkLoggedIn = async () => {
+    if (!email) {
+      navigation.navigate('Login');
+    } else {
+      alert(`Already logged in as ${email}`);
+    }
+  };
+
   const clearData = async () => {
     await AsyncStorage.removeItem('hasLaunched');
     await AsyncStorage.removeItem('userData');
@@ -210,9 +224,12 @@ export default function SettingsScreen() {
           Settings
         </Text>
 
-        <Pressable style={[btn, { backgroundColor: theme.button }]}>
+        <Pressable
+          style={[btn, { backgroundColor: theme.button }]}
+          onPress={checkLoggedIn}
+        >
           <Text style={{ color: theme.buttonText }}>
-            {email ? `Logged in as: ${email}` : 'Not logged in'}
+            {email ? `Logged in as: ${email}` : 'Press to login'}
           </Text>
         </Pressable>
 
