@@ -1,38 +1,44 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Image } from 'react-native';
-import TestScreen1 from '../screens/TestScreen1';
-import SQLTest from '../screens/SQLTest';
 import HomeScreen from '../screens/Home';
 import Settings from '../screens/Settings';
 import MapScreen from '../screens/MapScreen';
 import { useTheme } from '../theme/ThemeContext';
-import AITest from '../screens/AITest';
-import SignUp from '../screens/SignUp';
-import SignIn from '../screens/SignIn';
-import sqlIcon from '../../icons/sql.png';
-import speechbubbleIcon from '../../icons/speechbubble.png';
 import mapIcon from '../../icons/map.png';
 import homepageIcon from '../../icons/homepage.png';
 import settingsIcon from '../../icons/settings.png';
 import activitiesIcon from '../../icons/column-chart.png';
 import Activities from '../screens/Activities';
+import Login from '../screens/Login';
+import Register from '../screens/Register';
 
 export type RootTabParamList = {
-  Test1: undefined;
-  SQLTest: undefined;
-  AITest: undefined;
+  Login: undefined;
   Map: undefined;
   Home: undefined;
   Activities: undefined;
   Settings: undefined;
-  SignUp: undefined;
-  SignIn: undefined;
+  SettingsBack: undefined;
+  Register: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
+const SettingsTab = createStackNavigator<RootTabParamList>();
+
+function SettingsTabs() {
+  return (
+    <SettingsTab.Navigator screenOptions={{ headerShown: false }}>
+      <SettingsTab.Screen name="SettingsBack" component={Settings} />
+      <SettingsTab.Screen name="Login" component={Login} />
+      <SettingsTab.Screen name="Register" component={Register} />
+    </SettingsTab.Navigator>
+  );
+}
 
 export default function NavigationBar() {
   const { theme, darkMode } = useTheme();
+
   return (
     <Tab.Navigator
       key={darkMode ? 'dark' : 'light'}
@@ -56,12 +62,6 @@ export default function NavigationBar() {
           let icon;
 
           switch (route.name) {
-            case 'SQLTest':
-              icon = sqlIcon;
-              break;
-            case 'AITest':
-              icon = speechbubbleIcon;
-              break;
             case 'Map':
               icon = mapIcon;
               break;
@@ -92,15 +92,10 @@ export default function NavigationBar() {
         },
       })}
     >
-      <Tab.Screen name="Test1" component={TestScreen1} />
-      <Tab.Screen name="SQLTest" component={SQLTest} />
-      <Tab.Screen name="AITest" component={AITest} />
-      <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Activities" component={Activities} />
-      <Tab.Screen name="Settings" component={Settings} />
-      <Tab.Screen name="SignUp" component={SignUp} />
-      <Tab.Screen name="SignIn" component={SignIn} />
+      <Tab.Screen name="Settings" component={SettingsTabs} />
     </Tab.Navigator>
   );
 }

@@ -4,16 +4,23 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../util/firebase';
 import { useState } from 'react';
 import { useTheme } from '../theme/ThemeContext';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 
-export default function SignIn() {
+type RootStackParamList = {
+  Register: undefined;
+  SettingsBack: undefined;
+};
+
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { theme } = useTheme();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const signIn = async () => {
+  const login = async () => {
     try {
-      const user = await signInWithEmailAndPassword(auth, email, password);
-      console.log(user);
+      await signInWithEmailAndPassword(auth, email, password);
+      navigation.navigate('SettingsBack');
     } catch (error) {
       console.error('Error signing in:', error);
     }
@@ -24,13 +31,15 @@ export default function SignIn() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <View style={styles.content}>
+        <Pressable style={styles.back} onPress={() => navigation.goBack()}>
+          <Text style={{ color: theme.text }}>← Back</Text>
+        </Pressable>
         <TextInput
           style={[
             styles.input,
             {
               backgroundColor: theme.inputBackground,
               color: theme.inputText,
-              borderColor: theme.inputBorder,
             },
           ]}
           placeholder="Email"
@@ -45,7 +54,6 @@ export default function SignIn() {
             {
               backgroundColor: theme.inputBackground,
               color: theme.inputText,
-              borderColor: theme.inputBorder,
             },
           ]}
           placeholder="Password"
@@ -54,14 +62,20 @@ export default function SignIn() {
           onChangeText={setPassword}
           secureTextEntry
         />
+
         <Pressable
-          style={[
-            styles.button,
-            { backgroundColor: theme.button, borderColor: theme.inputBorder },
-          ]}
-          onPress={signIn}
+          style={[styles.button, { backgroundColor: theme.button }]}
+          onPress={login}
         >
-          <Text style={{ color: theme.buttonText }}>Sign In</Text>
+          <Text style={{ color: theme.buttonText }}>Login</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.registerButton]}
+          onPress={() => navigation.navigate('Register')}
+        >
+          <Text style={{ color: theme.buttonText }}>
+            No account yet? Register!
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -80,15 +94,25 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '90%',
-    borderWidth: 1,
     padding: 12,
     borderRadius: 10,
     marginBottom: 20,
   },
+  registerButton: {
+    alignItems: 'center',
+    width: '90%',
+    padding: 20,
+  },
   button: {
-    width: '22%',
+    alignItems: 'center',
+    width: '20%',
     padding: 14,
-    borderWidth: 1,
     borderRadius: 10,
+  },
+  back: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 10,
   },
 });

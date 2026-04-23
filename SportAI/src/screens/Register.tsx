@@ -4,21 +4,28 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../util/firebase';
 import { useState } from 'react';
 import { useTheme } from '../theme/ThemeContext';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 
-export default function SignUp() {
+type RootStackParamList = {
+  SettingsBack: undefined;
+  Login: undefined;
+};
+
+export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { theme } = useTheme();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const signUp = async () => {
+  const register = async () => {
     if (password !== confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
     try {
-      const user = await createUserWithEmailAndPassword(auth, email, password);
-      console.log(user);
+      await createUserWithEmailAndPassword(auth, email, password);
+      navigation.navigate('SettingsBack');
     } catch (error) {
       console.error('Error signing up:', error);
     }
@@ -29,13 +36,15 @@ export default function SignUp() {
       style={[styles.container, { backgroundColor: theme.background }]}
     >
       <View style={styles.content}>
+        <Pressable style={styles.back} onPress={() => navigation.goBack()}>
+          <Text style={{ color: theme.text }}>← Back</Text>
+        </Pressable>
         <TextInput
           style={[
             styles.input,
             {
               backgroundColor: theme.inputBackground,
               color: theme.inputText,
-              borderColor: theme.inputBorder,
             },
           ]}
           placeholder="Email"
@@ -50,7 +59,6 @@ export default function SignUp() {
             {
               backgroundColor: theme.inputBackground,
               color: theme.inputText,
-              borderColor: theme.inputBorder,
             },
           ]}
           placeholder="Password"
@@ -65,7 +73,6 @@ export default function SignUp() {
             {
               backgroundColor: theme.inputBackground,
               color: theme.inputText,
-              borderColor: theme.inputBorder,
             },
           ]}
           placeholder="Confirm Password"
@@ -75,13 +82,10 @@ export default function SignUp() {
           secureTextEntry
         />
         <Pressable
-          style={[
-            styles.button,
-            { backgroundColor: theme.button, borderColor: theme.inputBorder },
-          ]}
-          onPress={signUp}
+          style={[styles.button, { backgroundColor: theme.button }]}
+          onPress={register}
         >
-          <Text style={{ color: theme.buttonText }}>Sign Up</Text>
+          <Text style={{ color: theme.buttonText }}>Register</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -100,15 +104,20 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '90%',
-    borderWidth: 1,
     padding: 12,
     borderRadius: 10,
     marginBottom: 20,
   },
   button: {
-    width: '22%',
+    alignItems: 'center',
+    width: '25%',
     padding: 14,
-    borderWidth: 1,
     borderRadius: 10,
+  },
+  back: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 10,
   },
 });
