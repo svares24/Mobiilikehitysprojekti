@@ -4,13 +4,27 @@ import {
   backupDatabaseAsync,
   openDatabaseAsync,
 } from 'expo-sqlite';
-import { Coords, Point, Route } from '../types';
+import {
+  Compound,
+  Coords,
+  PeriodFormat,
+  PeriodName,
+  Point,
+  Route,
+} from '../types';
 import { getDuration, getTotalDistance } from './coordCalculations';
 import { File, Paths } from 'expo-file-system';
 
+const periodMap: Record<PeriodName, PeriodFormat> = {
+  year: '%Y',
+  month: '%Y-%m',
+  day: '%Y-%m-%d',
+  hour: '%Y-%m-%d-%H',
+};
+
 export const createTables = async (db: SQLiteDatabase) => {
   //quick version check for when schema changes
-  const version = 1;
+  const version = 2;
   await db.execAsync(
     'CREATE TABLE IF NOT EXISTS version (id INTEGER PRIMARY KEY AUTOINCREMENT, v INTEGER NOT NULL);'
   );
@@ -84,7 +98,7 @@ export const addCompleteRoute = async (
     const created = coordinates[coordinates.length - 1].time;
 
     const routeResult =
-      (await db.sql`INSERT INTO route (name,distance,duration,created) VALUES (${name},${distance},${duration},${created.getTime()});`) as SQLiteRunResult;
+      (await db.sql`INSERT INTO route (name,distance,duration,created) VALUES (${name},${distance},${duration},${created.getTime() / 1000});`) as SQLiteRunResult;
 
     const id = routeResult.lastInsertRowId;
 
@@ -96,10 +110,6 @@ export const addCompleteRoute = async (
     );
   });
 };
-
-/* export const addRoute = async (db: SQLiteDatabase, name: string) => {
-  await db.runAsync('INSERT INTO route (name) VALUES (?);', [name]);
-}; */
 
 export const getRoutes = async (db: SQLiteDatabase): Promise<Route[]> => {
   const result = await db.sql<Route>`SELECT * FROM route ORDER BY created;`;
@@ -163,6 +173,16 @@ export const getPoints = async (
 ): Promise<Point[]> => {
   const result =
     await db.sql<Point>`SELECT * FROM point WHERE route_id == ${route_id} ORDER BY time;`;
+  return result;
+};
+
+export const getSumRoute = async (
+  db: SQLiteDatabase,
+  period: PeriodName
+): Promise<Compound[]> => {
+  const result = await db.getAllAsync<Compound>(
+    `SELECT SUM(distance) as distance,SUM(duration) as duration,strftime("${periodMap[period]}",created,"unixepoch") as 'period' FROM route GROUP BY strftime("${periodMap[period]}",created,"unixepoch") ORDER BY created ASC;`
+  );
   return result;
 };
 
