@@ -9,6 +9,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PauseIcon from '../../icons/pause.png';
 import PlayIcon from '../../icons/play.png';
+import { getDistance } from '../util/coordCalculations';
 
 const html = `
 <!DOCTYPE html>
@@ -22,6 +23,8 @@ const html = `
     html, body, #map {
       height: 100%;
       width: 100%;
+      margin: 0;
+      padding: 0;
     }
   </style>
 </head>
@@ -45,26 +48,23 @@ export default function MapScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+  const [prevLocation, setPrevLocation] =
+    useState<Location.LocationObject | null>(null);
   const { theme } = useTheme();
   const [locationArray, setLocationArray] = useState<Coords[][]>([[]]);
   const [totalDistance, setTotalDistance] = useState(0);
   const [watchPosition, setWatchPosition] =
     useState<Location.LocationSubscription | null>(null);
   const db = useSQLiteContext();
-  const [time, setTime] = useState(130);
+  const [time, setTime] = useState(0);
   const [isTripActive, setIsTripActive] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startTimer = (initialTime: number) => {
-    setTime(initialTime);
+  const startTimer = () => {
+    setTime(0);
+    console.log('Starting timer');
     timerRef.current = setInterval(() => {
-      setTime((prevTime) => {
-        if (prevTime <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          return 0;
-        }
-        return prevTime - 1;
-      });
+      setTime((prevTime) => prevTime + 1);
     }, 1000);
   };
 
@@ -75,12 +75,15 @@ export default function MapScreen() {
     }
   };
 
-  const startTrip = async (initialTime: number) => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+  const startTrip = async () => {
+    const { status } =
+      (await Location.requestForegroundPermissionsAsync()) && // permission when using the app
+      (await Location.requestBackgroundPermissionsAsync()); // for background permission = Aina käytössä
     if (status !== 'granted') return;
 
-    startTimer(initialTime);
+    startTimer();
     setIsTripActive(true);
+
     setWatchPosition(
       await Location.watchPositionAsync(
         {
@@ -107,6 +110,15 @@ export default function MapScreen() {
 
   const stopTrip = () => {
     watchPosition?.remove();
+
+    webviewRef.current?.injectJavaScript(`
+      window.map.eachLayer((layer) => {
+        if (layer instanceof L.Polyline) {
+          window.map.removeLayer(layer);
+        }
+      });
+    `);
+    setTotalDistance(0);
     setWatchPosition(null);
     stopTimer();
     setIsTripActive(false);
@@ -114,7 +126,7 @@ export default function MapScreen() {
   };
 
   const saveTrip = async () => {
-    await addCompleteRoute(db, 'Test', locationArray[0]);
+    await addCompleteRoute(db, 'Test', locationArray[0], totalDistance, time);
   };
 
   useEffect(() => {
@@ -123,19 +135,35 @@ export default function MapScreen() {
         window.map.setView([${location.coords.latitude}, ${location.coords.longitude}], 19);
         circleMarker.setLatLng([${location.coords.latitude}, ${location.coords.longitude}]);
         circleMarker.redraw();
-        L.polyline(${JSON.stringify(locationArray[0].map((loc) => [loc.lat, loc.lon]))}, {color: 'blue'}).addTo(window.map);
       `);
-      setTotalDistance(totalDistance + 5);
+      if (prevLocation) {
+        const polylineCoords = prevLocation
+          ? `[[${prevLocation.coords.latitude}, ${prevLocation.coords.longitude}], [${location.coords.latitude}, ${location.coords.longitude}]]`
+          : `[[${location.coords.latitude}, ${location.coords.longitude}]]`;
+        webviewRef.current?.injectJavaScript(`
+         L.polyline(${polylineCoords}, {color: 'blue'}).addTo(window.map);
+         `);
+        setTotalDistance(
+          totalDistance +
+            getDistance(
+              {
+                lat: location.coords.latitude,
+                lon: location.coords.longitude,
+                alt: location.coords.altitude ?? 0,
+                time: new Date(location.timestamp),
+              },
+              {
+                lat: prevLocation.coords.latitude,
+                lon: prevLocation.coords.longitude,
+                alt: prevLocation.coords.altitude ?? 0,
+                time: new Date(prevLocation.timestamp),
+              }
+            )
+        );
+      }
+      setPrevLocation(location);
     }
   }, [location]);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
 
   return (
     <SafeAreaView
@@ -152,11 +180,11 @@ export default function MapScreen() {
         style={[styles.bottomContainer, { backgroundColor: theme.background }]}
       >
         <Text style={[styles.textInput, { color: theme.text }]}>
-          {totalDistance} m
+          {Math.floor(totalDistance)} m
         </Text>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => (isTripActive ? stopTrip() : startTrip(time))}
+          onPress={() => (isTripActive ? stopTrip() : startTrip())}
         >
           <Image
             source={isTripActive ? PauseIcon : PlayIcon}
@@ -187,7 +215,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    padding: 10,
+    padding: 8,
   },
   button: {
     textAlign: 'center',

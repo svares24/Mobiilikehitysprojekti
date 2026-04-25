@@ -5,7 +5,6 @@ import {
   openDatabaseAsync,
 } from 'expo-sqlite';
 import { Coords, Point, Route } from '../types';
-import { getDuration, getTotalDistance } from './coordCalculations';
 import { File, Paths } from 'expo-file-system';
 
 export const createTables = async (db: SQLiteDatabase) => {
@@ -69,6 +68,7 @@ export const loadBackUp = async (
   if (shm.exists) shm.delete();
   if (wal.exists) wal.delete();
   backup.copy(orig);
+  
   //backup.delete();
   resetter();
 };
@@ -76,11 +76,13 @@ export const loadBackUp = async (
 export const addCompleteRoute = async (
   db: SQLiteDatabase,
   name: string,
-  coordinates: Coords[]
+  coordinates: Coords[],
+  Distance: number,
+  Duration: number
 ) => {
   await db.withTransactionAsync(async () => {
-    const distance = getTotalDistance(coordinates);
-    const duration = getDuration(coordinates);
+    const distance = Distance;
+    const duration = Duration;
     const created = coordinates[coordinates.length - 1].time;
 
     const routeResult =
