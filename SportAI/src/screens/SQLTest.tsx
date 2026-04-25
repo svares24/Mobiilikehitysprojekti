@@ -41,30 +41,31 @@ const SQLTest = () => {
       <Button
         title="Test1"
         onPress={async () => {
+          const now = Date.now();
           await addCompleteRoute(db, 'Test1', [
             {
               lat: 65.062781,
               lon: 25.472262,
               alt: 10,
-              time: new Date(Date.now() - 1000 * 60 * 60 * 24),
+              time: new Date(now - 1000 * 60 * 60 * 24),
             },
             {
               lat: 65.062596,
               lon: 25.496101,
               alt: 10,
-              time: new Date(Date.now() - 1000 * 60 * 60 * 24 + 60 * 1000 * 5),
+              time: new Date(now - 1000 * 60 * 60 * 24 + 60 * 1000 * 5),
             },
             {
               lat: 65.055791,
               lon: 25.472551,
               alt: 10,
-              time: new Date(Date.now() - 1000 * 60 * 60 * 24 + 60 * 1000 * 10),
+              time: new Date(now - 1000 * 60 * 60 * 24 + 60 * 1000 * 10),
             },
             {
               lat: 65.062781,
               lon: 25.472262,
               alt: 10,
-              time: new Date(Date.now() - 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
+              time: new Date(now - 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
             },
           ]);
           refreshData();
@@ -108,7 +109,7 @@ const SQLTest = () => {
             <View>
               <Text>
                 {item.route_id} {item.name} {item.distance} {item.duration}{' '}
-                {item.created.toString()}
+                {(item.created * 1000).toString()}
               </Text>
               <Button
                 title="Delete"

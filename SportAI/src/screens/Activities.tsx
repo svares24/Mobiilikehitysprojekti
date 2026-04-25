@@ -54,7 +54,7 @@ const Activities = () => {
     });
 
     routes.forEach((r) => {
-      const d = new Date(r.created);
+      const d = new Date(r.created * 1000);
       d.setHours(0, 0, 0, 0);
       const k = key(d);
 

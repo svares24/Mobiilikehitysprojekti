@@ -62,7 +62,7 @@ const ActivityStats = ({ route }: { route: Route }) => {
       <View style={{ marginBottom: 10 }}>
         <Text style={[styles.title, { color: theme.text }]}>{route.name}</Text>
         <Text style={[styles.keys, { color: theme.text }]}>
-          {new Date(route.created).toLocaleString('fi-FI')}
+          {new Date(route.created * 1000).toLocaleString('fi-FI')}
         </Text>
       </View>
       <View style={{ flexDirection: 'row' }}>
