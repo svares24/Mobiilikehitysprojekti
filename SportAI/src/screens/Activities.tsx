@@ -1,21 +1,21 @@
-import { useCallback, useState, useMemo } from "react";
-import { Route } from "../types";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { FlatList, View, Text, Pressable } from "react-native";
-import Activity from "../components/Activity";
-import { getSortedRoutes } from "../util/dbHelper";
-import { useSQLiteContext } from "expo-sqlite";
-import { useTheme } from "../theme/ThemeContext";
-import { useFocusEffect } from "@react-navigation/native";
-import { Picker } from "@react-native-picker/picker";
-import { BarChart } from "react-native-gifted-charts";
+import { useCallback, useState, useMemo } from 'react';
+import { Route } from '../types';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { FlatList, View, Text, Pressable } from 'react-native';
+import Activity from '../components/Activity';
+import { getSortedRoutes } from '../util/dbHelper';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useTheme } from '../theme/ThemeContext';
+import { useFocusEffect } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+import { BarChart } from 'react-native-gifted-charts';
 
 const Activities = () => {
   const { theme } = useTheme();
   const db = useSQLiteContext();
   const [routes, setRoutes] = useState<Route[]>([]);
-  const [type, setType] = useState("newest");
-  const [viewMode, setViewMode] = useState<"list" | "chart">("list");
+  const [type, setType] = useState('newest');
+  const [viewMode, setViewMode] = useState<'list' | 'chart'>('list');
 
   const refreshData = async () => {
     const result = await getSortedRoutes(db, type);
@@ -25,8 +25,8 @@ const Activities = () => {
   useFocusEffect(
     useCallback(() => {
       refreshData();
-      console.log("refreshed");
-    }, [type]),
+      console.log('refreshed');
+    }, [type])
   );
 
   const chartData = useMemo(() => {
@@ -65,7 +65,7 @@ const Activities = () => {
 
     return days.map((d) => ({
       value: counts[key(d)],
-      label: d.toLocaleDateString("en-US", { weekday: "short" }),
+      label: d.toLocaleDateString('en-US', { weekday: 'short' }),
       frontColor: theme.text,
     }));
   }, [routes, theme.text]);
@@ -87,7 +87,7 @@ const Activities = () => {
             backgroundColor: theme.background,
           }}
           label="Newest"
-          value={"newest"}
+          value={'newest'}
         ></Picker.Item>
         <Picker.Item
           style={{
@@ -95,7 +95,7 @@ const Activities = () => {
             backgroundColor: theme.background,
           }}
           label="Oldest"
-          value={"oldest"}
+          value={'oldest'}
         ></Picker.Item>
         <Picker.Item
           style={{
@@ -103,7 +103,7 @@ const Activities = () => {
             backgroundColor: theme.background,
           }}
           label="Longest"
-          value={"longest"}
+          value={'longest'}
         ></Picker.Item>
         <Picker.Item
           style={{
@@ -111,23 +111,23 @@ const Activities = () => {
             backgroundColor: theme.background,
           }}
           label="Shortest"
-          value={"shortest"}
+          value={'shortest'}
         ></Picker.Item>
       </Picker>
-      <View style={{ flexDirection: "row", padding: 10 }}>
+      <View style={{ flexDirection: 'row', padding: 10 }}>
         <Pressable
-          onPress={() => setViewMode("list")}
+          onPress={() => setViewMode('list')}
           style={{
             flex: 1,
             padding: 10,
             backgroundColor:
-              viewMode === "list" ? theme.text : theme.background,
-            alignItems: "center",
+              viewMode === 'list' ? theme.text : theme.background,
+            alignItems: 'center',
           }}
         >
           <Text
             style={{
-              color: viewMode === "list" ? theme.background : theme.text,
+              color: viewMode === 'list' ? theme.background : theme.text,
             }}
           >
             List
@@ -135,25 +135,25 @@ const Activities = () => {
         </Pressable>
 
         <Pressable
-          onPress={() => setViewMode("chart")}
+          onPress={() => setViewMode('chart')}
           style={{
             flex: 1,
             padding: 10,
             backgroundColor:
-              viewMode === "chart" ? theme.text : theme.background,
-            alignItems: "center",
+              viewMode === 'chart' ? theme.text : theme.background,
+            alignItems: 'center',
           }}
         >
           <Text
             style={{
-              color: viewMode === "chart" ? theme.background : theme.text,
+              color: viewMode === 'chart' ? theme.background : theme.text,
             }}
           >
             Chart
           </Text>
         </Pressable>
       </View>
-      {viewMode === "list" ? (
+      {viewMode === 'list' ? (
         <FlatList
           data={routes.toReversed()}
           renderItem={({ item }) => <Activity route={item} />}

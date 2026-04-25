@@ -3,7 +3,7 @@ import {
   SQLiteRunResult,
   backupDatabaseAsync,
   openDatabaseAsync,
-} from "expo-sqlite";
+} from 'expo-sqlite';
 import {
   Compound,
   Coords,
@@ -11,39 +11,39 @@ import {
   PeriodName,
   Point,
   Route,
-} from "../types";
-import { getDuration, getTotalDistance } from "./coordCalculations";
-import { File, Paths } from "expo-file-system";
+} from '../types';
+import { getDuration, getTotalDistance } from './coordCalculations';
+import { File, Paths } from 'expo-file-system';
 
 const periodMap: Record<PeriodName, PeriodFormat> = {
-  year: "%Y",
-  month: "%Y-%m",
-  day: "%Y-%m-%d",
-  hour: "%Y-%m-%d-%H",
+  year: '%Y',
+  month: '%Y-%m',
+  day: '%Y-%m-%d',
+  hour: '%Y-%m-%d-%H',
 };
 
 export const createTables = async (db: SQLiteDatabase) => {
   //quick version check for when schema changes
   const version = 2;
   await db.execAsync(
-    "CREATE TABLE IF NOT EXISTS version (id INTEGER PRIMARY KEY AUTOINCREMENT, v INTEGER NOT NULL);",
+    'CREATE TABLE IF NOT EXISTS version (id INTEGER PRIMARY KEY AUTOINCREMENT, v INTEGER NOT NULL);'
   );
   const result = await db.sql<{
     id: number;
     v: number;
   }>`SELECT * FROM version;`;
   if (!result[0] || result[0].v != version) {
-    await db.execAsync("DROP TABLE IF EXISTS route;");
-    await db.execAsync("DROP TABLE IF EXISTS point;");
+    await db.execAsync('DROP TABLE IF EXISTS route;');
+    await db.execAsync('DROP TABLE IF EXISTS point;');
   }
 
-  await db.execAsync("PRAGMA journal_mode = WAL");
-  await db.execAsync("PRAGMA foreign_keys = ON");
+  await db.execAsync('PRAGMA journal_mode = WAL');
+  await db.execAsync('PRAGMA foreign_keys = ON');
   await db.execAsync(
-    "CREATE TABLE IF NOT EXISTS route (route_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, distance REAL NOT NULL, duration INTEGER NOT NULL, created DATE NOT NULL);",
+    'CREATE TABLE IF NOT EXISTS route (route_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, distance REAL NOT NULL, duration INTEGER NOT NULL, created DATE NOT NULL);'
   );
   await db.execAsync(
-    "CREATE TABLE IF NOT EXISTS point (point_id INTEGER PRIMARY KEY AUTOINCREMENT, route_id INTEGER NOT NULL, lat REAL NOT NULL, lon REAL NOT NULL, alt REAL NOT NULL, time INTEGER NOT NULL, FOREIGN KEY (route_id) REFERENCES route(route_id) ON DELETE CASCADE);",
+    'CREATE TABLE IF NOT EXISTS point (point_id INTEGER PRIMARY KEY AUTOINCREMENT, route_id INTEGER NOT NULL, lat REAL NOT NULL, lon REAL NOT NULL, alt REAL NOT NULL, time INTEGER NOT NULL, FOREIGN KEY (route_id) REFERENCES route(route_id) ON DELETE CASCADE);'
   );
   await db.sql`INSERT OR REPLACE INTO version (id,v) VALUES (1,${version});`;
 };
@@ -61,14 +61,14 @@ export const backUp = async (db: SQLiteDatabase, name: string) => {
   const newDB = await openDatabaseAsync(name);
 
   await backupDatabaseAsync({ sourceDatabase: db, destDatabase: newDB });
-  console.log("Backed up");
+  console.log('Backed up');
   await newDB.closeAsync();
 };
 
 export const loadBackUp = async (
   db: SQLiteDatabase,
   name: string,
-  resetter: () => void,
+  resetter: () => void
 ) => {
   await db.closeAsync();
   const dbPath = `${Paths.document.uri}SQLite/route.db`;
@@ -90,7 +90,7 @@ export const loadBackUp = async (
 export const addCompleteRoute = async (
   db: SQLiteDatabase,
   name: string,
-  coordinates: Coords[],
+  coordinates: Coords[]
 ) => {
   await db.withTransactionAsync(async () => {
     const distance = getTotalDistance(coordinates);
@@ -105,8 +105,8 @@ export const addCompleteRoute = async (
     await Promise.all(
       coordinates.map(
         (coordinate) =>
-          db.sql`INSERT INTO point (route_id,lat,lon,alt,time) VALUES (${id},${coordinate.lat},${coordinate.lon},${coordinate.alt},${coordinate.time.getTime()});`,
-      ),
+          db.sql`INSERT INTO point (route_id,lat,lon,alt,time) VALUES (${id},${coordinate.lat},${coordinate.lon},${coordinate.alt},${coordinate.time.getTime()});`
+      )
     );
   });
 };
@@ -118,14 +118,14 @@ export const getRoutes = async (db: SQLiteDatabase): Promise<Route[]> => {
 
 export const getSortedRoutes = async (
   db: SQLiteDatabase,
-  sort: string,
+  sort: string
 ): Promise<Route[]> => {
   switch (sort) {
-    case "oldest":
+    case 'oldest':
       return await db.sql<Route>`SELECT * FROM route ORDER BY created DESC;`;
-    case "longest":
+    case 'longest':
       return await db.sql<Route>`SELECT * FROM route ORDER BY distance ASC;`;
-    case "shortest":
+    case 'shortest':
       return await db.sql<Route>`SELECT * FROM route ORDER BY distance DESC;`;
     default:
       return await db.sql<Route>`SELECT * FROM route ORDER BY created ASC;`;
@@ -134,7 +134,7 @@ export const getSortedRoutes = async (
 
 export const getBounds = async (
   db: SQLiteDatabase,
-  id: number,
+  id: number
 ): Promise<number[]> => {
   const result =
     await db.sql<number>`SELECT MAX(lat),MAX(lon),MIN(lat),MIN(lon) FROM point WHERE route_id == ${id};`.values();
@@ -143,7 +143,7 @@ export const getBounds = async (
 
 export const getRoute = async (
   db: SQLiteDatabase,
-  id: number,
+  id: number
 ): Promise<Route> => {
   const result =
     await db.sql<Route>`SELECT * FROM route WHERE route_id == ${id};`;
@@ -153,7 +153,7 @@ export const getRoute = async (
 export const changeRouteName = async (
   db: SQLiteDatabase,
   id: number,
-  name: string,
+  name: string
 ) => {
   await db.sql`UPDATE route SET name = ${name} WHERE route_id = ${id};`;
 };
@@ -169,7 +169,7 @@ export const getAllPoints = async (db: SQLiteDatabase): Promise<Point[]> => {
 
 export const getPoints = async (
   db: SQLiteDatabase,
-  route_id: number,
+  route_id: number
 ): Promise<Point[]> => {
   const result =
     await db.sql<Point>`SELECT * FROM point WHERE route_id == ${route_id} ORDER BY time;`;
@@ -178,17 +178,17 @@ export const getPoints = async (
 
 export const getSumRoute = async (
   db: SQLiteDatabase,
-  period: PeriodName,
+  period: PeriodName
 ): Promise<Compound[]> => {
   const result = await db.getAllAsync<Compound>(
-    `SELECT SUM(distance) as distance,SUM(duration) as duration,strftime("${periodMap[period]}",created / 1000,"unixepoch") as 'period' FROM route GROUP BY strftime("${periodMap[period]}",created,"unixepoch") ORDER BY created ASC;`,
+    `SELECT SUM(distance) as distance,SUM(duration) as duration,strftime("${periodMap[period]}",created / 1000,"unixepoch") as 'period' FROM route GROUP BY strftime("${periodMap[period]}",created,"unixepoch") ORDER BY created ASC;`
   );
   return result;
 };
 
 export const getRoutesByDate = async (
   db: SQLiteDatabase,
-  dateString: string,
+  dateString: string
 ): Promise<Route[]> => {
   const start = new Date(dateString);
   start.setHours(0, 0, 0, 0);
