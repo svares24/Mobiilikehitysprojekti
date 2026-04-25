@@ -20,6 +20,7 @@ import {
   getRoutesByDate,
   deleteRoute,
   changeRouteName,
+  getSumRoute,
 } from '../util/dbHelper';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -57,6 +58,7 @@ export default function HomeScreen({ navigation }: Props) {
         setAllRoutes(result);
       };
       loadRoutes();
+      getSumRoute(db, 'day').then((e) => console.log(e)); // test
     }, [])
   );
 
@@ -74,7 +76,7 @@ export default function HomeScreen({ navigation }: Props) {
     const marks: MarkedDates = {};
 
     allRoutes.forEach((r) => {
-      const date = formatDate(r.created);
+      const date = formatDate(r.created * 1000);
       marks[date] = { marked: true };
     });
 

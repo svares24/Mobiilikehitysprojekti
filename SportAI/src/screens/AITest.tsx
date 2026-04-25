@@ -30,7 +30,7 @@ const AITest = () => {
     User profile: ${data} 
     Data of past runs: ${JSON.stringify(
       result.slice(-7).map((r) => {
-        return { ...r, created: new Date(r.created) };
+        return { ...r, created: new Date(r.created * 1000) };
       })
     )} duration is in seconds distance in meters. Current date is ${new Date()}. 
     Task: Based on my goal and past runs calculate the ideal distance for today's run. 

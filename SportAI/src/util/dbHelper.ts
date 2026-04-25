@@ -24,7 +24,7 @@ const periodMap: Record<PeriodName, PeriodFormat> = {
 
 export const createTables = async (db: SQLiteDatabase) => {
   //quick version check for when schema changes
-  const version = 2;
+  const version = 3;
   await db.execAsync(
     'CREATE TABLE IF NOT EXISTS version (id INTEGER PRIMARY KEY AUTOINCREMENT, v INTEGER NOT NULL);'
   );
@@ -98,7 +98,7 @@ export const addCompleteRoute = async (
     const created = coordinates[coordinates.length - 1].time;
 
     const routeResult =
-      (await db.sql`INSERT INTO route (name,distance,duration,created) VALUES (${name},${distance},${duration},${created.getTime()});`) as SQLiteRunResult;
+      (await db.sql`INSERT INTO route (name,distance,duration,created) VALUES (${name},${distance},${duration},${created.getTime() / 1000});`) as SQLiteRunResult;
 
     const id = routeResult.lastInsertRowId;
 
@@ -181,7 +181,10 @@ export const getSumRoute = async (
   period: PeriodName
 ): Promise<Compound[]> => {
   const result = await db.getAllAsync<Compound>(
-    `SELECT SUM(distance) as distance,SUM(duration) as duration,strftime("${periodMap[period]}",created / 1000,"unixepoch") as 'period' FROM route GROUP BY strftime("${periodMap[period]}",created,"unixepoch") ORDER BY created ASC;`
+    `SELECT SUM(distance) as distance,SUM(duration) as duration,strftime("${periodMap[period]}",created,"unixepoch") as 'period' 
+    FROM route 
+    GROUP BY strftime("${periodMap[period]}",created,"unixepoch") 
+    ORDER BY created ASC;`
   );
   return result;
 };
@@ -196,6 +199,6 @@ export const getRoutesByDate = async (
   end.setHours(23, 59, 59, 999);
 
   const result = await db.sql<Route>`
-    SELECT * FROM route WHERE created >= ${start.getTime()} AND created <= ${end.getTime()} ORDER BY created;`;
+    SELECT * FROM route WHERE created >= ${start.getTime() / 1000} AND created <= ${end.getTime() / 1000} ORDER BY created;`;
   return result;
 };
