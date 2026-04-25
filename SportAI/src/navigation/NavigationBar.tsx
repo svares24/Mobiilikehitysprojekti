@@ -12,6 +12,7 @@ import activitiesIcon from '../../icons/column-chart.png';
 import Activities from '../screens/Activities';
 import Login from '../screens/Login';
 import Register from '../screens/Register';
+import SQLTest from '../screens/SQLTest';
 
 export type RootTabParamList = {
   Login: undefined;
@@ -21,6 +22,7 @@ export type RootTabParamList = {
   Settings: undefined;
   SettingsBack: undefined;
   Register: undefined;
+  SQLTest: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -96,6 +98,7 @@ export default function NavigationBar() {
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Activities" component={Activities} />
       <Tab.Screen name="Settings" component={SettingsTabs} />
+      <Tab.Screen name="SQLTest" component={SQLTest} />
     </Tab.Navigator>
   );
 }
