@@ -48,6 +48,7 @@ const Activities = () => {
   );
 
   const getLine = (raw: Compound[], type: PeriodName): lineDataItem[] => {
+    if (!raw.length) return [];
     const data = raw.reduce<Record<string, number>>((acc, r) => {
       acc[r.period] = r.distance;
       return acc;
