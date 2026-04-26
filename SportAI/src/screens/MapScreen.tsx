@@ -76,9 +76,7 @@ export default function MapScreen() {
   };
 
   const startTrip = async () => {
-    const { status } =
-      (await Location.requestForegroundPermissionsAsync()) && // permission when using the app
-      (await Location.requestBackgroundPermissionsAsync()); // for background permission = Aina käytössä
+    const { status } = await Location.requestForegroundPermissionsAsync(); // permission when using the app
     if (status !== 'granted') return;
 
     startTimer();
