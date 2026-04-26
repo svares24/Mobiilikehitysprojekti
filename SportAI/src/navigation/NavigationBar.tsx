@@ -9,9 +9,11 @@ import mapIcon from '../../icons/map.png';
 import homepageIcon from '../../icons/homepage.png';
 import settingsIcon from '../../icons/settings.png';
 import activitiesIcon from '../../icons/column-chart.png';
+import speechbubbleIcon from '../../icons/speechbubble.png';
 import Activities from '../screens/Activities';
 import Login from '../screens/Login';
 import Register from '../screens/Register';
+import AITest from '../screens/AITest';
 import SQLTest from '../screens/SQLTest';
 
 export type RootTabParamList = {
@@ -22,6 +24,7 @@ export type RootTabParamList = {
   Settings: undefined;
   SettingsBack: undefined;
   Register: undefined;
+  AITest: undefined;
   SQLTest: undefined;
 };
 
@@ -76,6 +79,9 @@ export default function NavigationBar() {
             case 'Activities':
               icon = activitiesIcon;
               break;
+            case 'AITest':
+              icon = speechbubbleIcon;
+              break;
             default:
               return null;
           }
@@ -98,6 +104,7 @@ export default function NavigationBar() {
       <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Activities" component={Activities} />
       <Tab.Screen name="Settings" component={SettingsTabs} />
+      <Tab.Screen name="AITest" component={AITest} />
       <Tab.Screen name="SQLTest" component={SQLTest} />
     </Tab.Navigator>
   );

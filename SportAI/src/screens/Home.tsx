@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../theme/ThemeContext';
 import { useSQLiteContext } from 'expo-sqlite';
 import { DateData } from 'react-native-calendars';
@@ -24,20 +23,7 @@ import {
 } from '../util/dbHelper';
 import { useFocusEffect } from '@react-navigation/native';
 
-type RootTabParamList = {
-  Map: { start?: boolean };
-  Home: undefined;
-};
-
-type HomeScreenNavigationProp = BottomTabNavigationProp<
-  RootTabParamList,
-  'Home'
->;
-type Props = {
-  navigation: HomeScreenNavigationProp;
-};
-
-export default function HomeScreen({ navigation }: Props) {
+export default function HomeScreen() {
   const db = useSQLiteContext();
   const { theme } = useTheme();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -119,13 +105,6 @@ export default function HomeScreen({ navigation }: Props) {
           onDayPress={handleDayPress}
           markedDates={getMarkedDates()}
         />
-        <Pressable
-          style={[styles.button, { backgroundColor: theme.button }]}
-          onPress={() => navigation.navigate('Map', { start: true })}
-        >
-          <Text style={{ color: theme.buttonText }}>Start</Text>
-        </Pressable>
-
         <Modal visible={!!selectedDate}>
           <View
             style={[

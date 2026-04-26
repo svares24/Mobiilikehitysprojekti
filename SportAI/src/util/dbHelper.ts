@@ -4,6 +4,10 @@ import {
   backupDatabaseAsync,
   openDatabaseAsync,
 } from 'expo-sqlite';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { storage } from './firebase';
+import { Coords, Point, Route } from '../types';
+
 import {
   Compound,
   Coords,
@@ -65,6 +69,39 @@ export const backUp = async (db: SQLiteDatabase, name: string) => {
   await newDB.closeAsync();
 };
 
+export const uploadBackupToFirebase = async (
+  fileUri: string,
+  uid: string,
+  filename: string
+) => {
+  console.log(fileUri, uid, filename);
+  const response = await fetch(fileUri);
+  const blob = await response.blob();
+  const storageRef = ref(storage, `users/${uid}/${filename}`);
+  await uploadBytes(storageRef, blob);
+  return storageRef.fullPath;
+};
+
+export const downloadBackupFromFirebase = async (
+  uid: string,
+  filename: string
+) => {
+  const storageRef = ref(storage, `users/${uid}/${filename}`);
+  const url = await getDownloadURL(storageRef);
+
+  const response = await fetch(url);
+  const buffer = await response.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+
+  const localPath = `${Paths.document.uri}SQLite/${filename}`;
+  const file = new File(localPath);
+
+  if (file.exists) file.delete();
+  await file.write(bytes);
+
+  return localPath;
+};
+
 export const loadBackUp = async (
   db: SQLiteDatabase,
   name: string,
@@ -82,7 +119,13 @@ export const loadBackUp = async (
   if (orig.exists) orig.delete();
   if (shm.exists) shm.delete();
   if (wal.exists) wal.delete();
-  backup.copy(orig);
+
+  try {
+    backup.copy(orig);
+    backup.delete();
+  } catch (e) {
+    console.log('Error copying backup:', e);
+  }
   //backup.delete();
   resetter();
 };
@@ -90,11 +133,13 @@ export const loadBackUp = async (
 export const addCompleteRoute = async (
   db: SQLiteDatabase,
   name: string,
-  coordinates: Coords[]
+  coordinates: Coords[],
+  Distance: number,
+  Duration: number
 ) => {
   await db.withTransactionAsync(async () => {
-    const distance = getTotalDistance(coordinates);
-    const duration = getDuration(coordinates);
+    const distance = Distance;
+    const duration = Duration;
     const created = coordinates[coordinates.length - 1].time;
 
     const routeResult =
