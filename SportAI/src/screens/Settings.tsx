@@ -16,11 +16,17 @@ import { useTheme } from '../theme/ThemeContext';
 import { UserData } from '../types';
 import { DeviceEventEmitter } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
-import { backUp, loadBackUp } from '../util/dbHelper';
+import {
+  backUp,
+  loadBackUp,
+  uploadBackupToFirebase,
+  downloadBackupFromFirebase,
+} from '../util/dbHelper';
 import { useDbReset } from '../context/dbReset';
 import { auth } from '../util/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { File, Paths } from 'expo-file-system';
 
 type RootStackParamList = {
   Login: undefined;
@@ -75,9 +81,43 @@ export default function SettingsScreen() {
         onPress: async () => {
           console.log('backing up data');
           try {
-            await backUp(db, 'test.db');
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+              Alert.alert('Please sign in before uploading a backup');
+              return;
+            }
+
+            const backupName = 'cloud.db';
+            try {
+              await backUp(db, backupName);
+            } catch (backupError) {
+              console.log('Backup creation error:', backupError);
+              Alert.alert(
+                'Error creating backup',
+                'Could not create backup file.'
+              );
+              return;
+            }
+            const localBackupUri = `${Paths.document.uri}SQLite/${backupName}`;
+            const backupFile = new File(localBackupUri);
+
+            if (!backupFile.exists) {
+              console.log('Backup file missing:', localBackupUri);
+              Alert.alert(
+                'Backup failed',
+                'Backup file was not found locally.'
+              );
+              return;
+            }
+
+            await uploadBackupToFirebase(
+              localBackupUri,
+              currentUser.uid,
+              backupName
+            );
+
             console.log('Backup success');
-            Alert.alert('Success!');
+            Alert.alert('Backup uploaded to Firebase');
           } catch (error) {
             console.log('Backup error:', error);
             Alert.alert('Error, something went wrong');
@@ -96,7 +136,22 @@ export default function SettingsScreen() {
         onPress: async () => {
           console.log('restoring data');
           try {
-            await loadBackUp(db, 'test.db', reset);
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+              Alert.alert('Please sign in before restoring a backup');
+              return;
+            }
+            await downloadBackupFromFirebase(currentUser.uid, 'cloud.db');
+          } catch (downloadError) {
+            console.log('Download error:', downloadError);
+            Alert.alert(
+              'Error downloading backup',
+              'Could not download backup from Firebase.'
+            );
+            return;
+          }
+          try {
+            await loadBackUp(db, 'cloud.db', reset);
             console.log('Restore success');
             Alert.alert('Success!');
           } catch (error) {
