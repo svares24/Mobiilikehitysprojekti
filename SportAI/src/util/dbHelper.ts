@@ -7,7 +7,7 @@ import {
 import {
   Compound,
   Coords,
-  PeriodFormat,
+  PeriodDBFormat,
   PeriodName,
   Point,
   Route,
@@ -15,11 +15,11 @@ import {
 import { getDuration, getTotalDistance } from './coordCalculations';
 import { File, Paths } from 'expo-file-system';
 
-const periodMap: Record<PeriodName, PeriodFormat> = {
+const periodMap: Record<PeriodName, PeriodDBFormat> = {
   year: '%Y',
   month: '%Y-%m',
   day: '%Y-%m-%d',
-  hour: '%Y-%m-%d-%H',
+  hour: '%Y-%m-%dT%H:00:00',
 };
 
 export const createTables = async (db: SQLiteDatabase) => {
