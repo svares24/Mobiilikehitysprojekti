@@ -6,6 +6,7 @@ import {
 } from 'expo-sqlite';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from './firebase';
+
 import {
   Coords,
   Point,

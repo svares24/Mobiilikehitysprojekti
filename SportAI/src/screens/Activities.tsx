@@ -44,7 +44,6 @@ const Activities = () => {
   useFocusEffect(
     useCallback(() => {
       refreshData();
-      console.log('refreshed');
     }, [type, period])
   );
 
@@ -222,6 +221,8 @@ const Activities = () => {
             barWidth={24}
             spacing={20}
             roundedTop
+            yAxisLabelWidth={45}
+            yAxisLabelSuffix=" trips"
             xAxisColor={theme.text}
             yAxisColor={theme.text}
             xAxisLabelTextStyle={{ color: theme.text }}
@@ -270,6 +271,8 @@ const Activities = () => {
             data={getLine(data, period)}
             color={theme.text}
             dataPointsColor={theme.text}
+            yAxisLabelWidth={45}
+            yAxisLabelSuffix="km"
             yAxisColor={theme.text}
             xAxisColor={theme.text}
             xAxisLabelTextStyle={{ color: theme.text }}
