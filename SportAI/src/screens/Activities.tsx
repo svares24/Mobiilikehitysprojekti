@@ -1,14 +1,29 @@
 import { useCallback, useState, useMemo } from 'react';
-import { Route } from '../types';
+import { Compound, PeriodFormat, PeriodName, Route } from '../types';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlatList, View, Text, Pressable } from 'react-native';
 import Activity from '../components/Activity';
-import { getSortedRoutes } from '../util/dbHelper';
+import { getSortedRoutes, getSumRoute } from '../util/dbHelper';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useTheme } from '../theme/ThemeContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-import { BarChart } from 'react-native-gifted-charts';
+import { BarChart, LineChart, lineDataItem } from 'react-native-gifted-charts';
+import { format } from 'date-fns';
+
+const periodMap: Record<PeriodName, PeriodFormat> = {
+  year: 'yyyy',
+  month: 'MMM',
+  day: 'd',
+  hour: 'H',
+};
+
+const periodDBMap: Record<PeriodName, PeriodFormat> = {
+  year: 'y',
+  month: 'y-MM',
+  day: 'y-MM-dd',
+  hour: "yyyy-MM-dd'T'HH:00:00",
+};
 
 const Activities = () => {
   const { theme } = useTheme();
@@ -16,9 +31,13 @@ const Activities = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [type, setType] = useState('newest');
   const [viewMode, setViewMode] = useState<'list' | 'chart'>('list');
+  const [data, setData] = useState<Compound[]>([]);
+  const [period, setPeriod] = useState<PeriodName>('day');
 
   const refreshData = async () => {
     const result = await getSortedRoutes(db, type);
+    const newData = await getSumRoute(db, period);
+    setData(newData);
     setRoutes(result);
   };
 
@@ -26,8 +45,43 @@ const Activities = () => {
     useCallback(() => {
       refreshData();
       console.log('refreshed');
-    }, [type])
+    }, [type, period])
   );
+
+  const getLine = (raw: Compound[], type: PeriodName): lineDataItem[] => {
+    const data = raw.reduce<Record<string, number>>((acc, r) => {
+      acc[r.period] = r.distance;
+      return acc;
+    }, {});
+    //const startDate = new Date(raw[0].period);
+    const values: number[] = [];
+    const endDate = new Date(raw[raw.length - 1].period);
+    const result: lineDataItem[] = [];
+    const current = new Date(endDate);
+    while (result.length < 7) {
+      const dataStr = format(current, periodDBMap[type]);
+      values.push(data[dataStr] ?? 0);
+      result.push({
+        value: (data[dataStr] ?? 0) / 1000,
+        label: format(current, periodMap[type]),
+      });
+      switch (type) {
+        case 'hour':
+          current.setHours(current.getHours() - 1);
+          break;
+        case 'day':
+          current.setDate(current.getDate() - 1);
+          break;
+        case 'month':
+          current.setMonth(current.getMonth() - 1);
+          break;
+        case 'year':
+          current.setFullYear(current.getFullYear() - 1);
+          break;
+      }
+    }
+    return result.toReversed();
+  };
 
   const chartData = useMemo(() => {
     const now = new Date();
@@ -71,49 +125,6 @@ const Activities = () => {
   }, [routes, theme.text]);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-      <Picker
-        style={{
-          color: theme.text,
-          backgroundColor: theme.background,
-        }}
-        mode="dropdown"
-        dropdownIconColor={theme.text}
-        selectedValue={type}
-        onValueChange={(itemValue) => setType(itemValue)}
-      >
-        <Picker.Item
-          style={{
-            color: theme.text,
-            backgroundColor: theme.background,
-          }}
-          label="Newest"
-          value={'newest'}
-        ></Picker.Item>
-        <Picker.Item
-          style={{
-            color: theme.text,
-            backgroundColor: theme.background,
-          }}
-          label="Oldest"
-          value={'oldest'}
-        ></Picker.Item>
-        <Picker.Item
-          style={{
-            color: theme.text,
-            backgroundColor: theme.background,
-          }}
-          label="Longest"
-          value={'longest'}
-        ></Picker.Item>
-        <Picker.Item
-          style={{
-            color: theme.text,
-            backgroundColor: theme.background,
-          }}
-          label="Shortest"
-          value={'shortest'}
-        ></Picker.Item>
-      </Picker>
       <View style={{ flexDirection: 'row', padding: 10 }}>
         <Pressable
           onPress={() => setViewMode('list')}
@@ -154,10 +165,55 @@ const Activities = () => {
         </Pressable>
       </View>
       {viewMode === 'list' ? (
-        <FlatList
-          data={routes.toReversed()}
-          renderItem={({ item }) => <Activity route={item} />}
-        />
+        <>
+          <Picker
+            style={{
+              color: theme.text,
+              backgroundColor: theme.background,
+            }}
+            mode="dropdown"
+            dropdownIconColor={theme.text}
+            selectedValue={type}
+            onValueChange={(itemValue) => setType(itemValue)}
+          >
+            <Picker.Item
+              style={{
+                color: theme.text,
+                backgroundColor: theme.background,
+              }}
+              label="Newest"
+              value={'newest'}
+            ></Picker.Item>
+            <Picker.Item
+              style={{
+                color: theme.text,
+                backgroundColor: theme.background,
+              }}
+              label="Oldest"
+              value={'oldest'}
+            ></Picker.Item>
+            <Picker.Item
+              style={{
+                color: theme.text,
+                backgroundColor: theme.background,
+              }}
+              label="Longest"
+              value={'longest'}
+            ></Picker.Item>
+            <Picker.Item
+              style={{
+                color: theme.text,
+                backgroundColor: theme.background,
+              }}
+              label="Shortest"
+              value={'shortest'}
+            ></Picker.Item>
+          </Picker>
+          <FlatList
+            data={routes.toReversed()}
+            renderItem={({ item }) => <Activity route={item} />}
+          />
+        </>
       ) : (
         <View style={{ padding: 10 }}>
           <BarChart
@@ -174,6 +230,50 @@ const Activities = () => {
             stepValue={Math.max(...chartData.map((d) => d.value)) > 5 ? 2 : 1}
             formatYLabel={(value) => String(parseInt(value))}
           />
+          <Picker
+            style={{
+              color: theme.text,
+              backgroundColor: theme.background,
+            }}
+            mode="dropdown"
+            dropdownIconColor={theme.text}
+            selectedValue={type}
+            onValueChange={(itemValue) => setPeriod(itemValue as PeriodName)}
+          >
+            <Picker.Item
+              style={{
+                color: theme.text,
+                backgroundColor: theme.background,
+              }}
+              label="Day"
+              value={'day'}
+            ></Picker.Item>
+            <Picker.Item
+              style={{
+                color: theme.text,
+                backgroundColor: theme.background,
+              }}
+              label="Month"
+              value={'month'}
+            ></Picker.Item>
+            <Picker.Item
+              style={{
+                color: theme.text,
+                backgroundColor: theme.background,
+              }}
+              label="Year"
+              value={'year'}
+            ></Picker.Item>
+          </Picker>
+          <LineChart
+            data={getLine(data, period)}
+            color={theme.text}
+            dataPointsColor={theme.text}
+            yAxisColor={theme.text}
+            xAxisColor={theme.text}
+            xAxisLabelTextStyle={{ color: theme.text }}
+            yAxisTextStyle={{ color: theme.text }}
+          ></LineChart>
         </View>
       )}
     </SafeAreaView>

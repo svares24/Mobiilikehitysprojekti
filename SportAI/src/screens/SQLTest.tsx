@@ -68,6 +68,136 @@ const SQLTest = () => {
               time: new Date(now - 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
             },
           ]);
+          await addCompleteRoute(db, 'Test1', [
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 1000 * 60 * 60 * 24),
+            },
+            {
+              lat: 65.062596,
+              lon: 25.496101,
+              alt: 10,
+              time: new Date(now - 1000 * 60 * 60 * 24 + 60 * 1000 * 5),
+            },
+            {
+              lat: 65.055791,
+              lon: 25.472551,
+              alt: 10,
+              time: new Date(now - 1000 * 60 * 60 * 24 + 60 * 1000 * 10),
+            },
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
+            },
+          ]);
+          await addCompleteRoute(db, 'Test1', [
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 3 * 1000 * 60 * 60 * 24),
+            },
+            {
+              lat: 65.062596,
+              lon: 25.496101,
+              alt: 10,
+              time: new Date(now - 3 * 1000 * 60 * 60 * 24 + 60 * 1000 * 5),
+            },
+            {
+              lat: 65.055791,
+              lon: 25.472551,
+              alt: 10,
+              time: new Date(now - 3 * 1000 * 60 * 60 * 24 + 60 * 1000 * 10),
+            },
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 3 * 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
+            },
+          ]);
+          await addCompleteRoute(db, 'Test1', [
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 6 * 1000 * 60 * 60 * 24),
+            },
+            {
+              lat: 65.062596,
+              lon: 25.496101,
+              alt: 10,
+              time: new Date(now - 6 * 1000 * 60 * 60 * 24 + 60 * 1000 * 5),
+            },
+            {
+              lat: 65.055791,
+              lon: 25.472551,
+              alt: 10,
+              time: new Date(now - 6 * 1000 * 60 * 60 * 24 + 60 * 1000 * 10),
+            },
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 6 * 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
+            },
+          ]);
+          await addCompleteRoute(db, 'Test1', [
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 30 * 1000 * 60 * 60 * 24),
+            },
+            {
+              lat: 65.062596,
+              lon: 25.496101,
+              alt: 10,
+              time: new Date(now - 30 * 1000 * 60 * 60 * 24 + 60 * 1000 * 5),
+            },
+            {
+              lat: 65.055791,
+              lon: 25.472551,
+              alt: 10,
+              time: new Date(now - 30 * 1000 * 60 * 60 * 24 + 60 * 1000 * 10),
+            },
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 30 * 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
+            },
+          ]);
+          await addCompleteRoute(db, 'Test1', [
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 36 * 1000 * 60 * 60 * 24),
+            },
+            {
+              lat: 65.062596,
+              lon: 25.496101,
+              alt: 10,
+              time: new Date(now - 36 * 1000 * 60 * 60 * 24 + 60 * 1000 * 5),
+            },
+            {
+              lat: 65.055791,
+              lon: 25.472551,
+              alt: 10,
+              time: new Date(now - 36 * 1000 * 60 * 60 * 24 + 60 * 1000 * 10),
+            },
+            {
+              lat: 65.062781,
+              lon: 25.472262,
+              alt: 10,
+              time: new Date(now - 36 * 1000 * 60 * 60 * 24 + 60 * 1000 * 15),
+            },
+          ]);
           refreshData();
         }}
       ></Button>
