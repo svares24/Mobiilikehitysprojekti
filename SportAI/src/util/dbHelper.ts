@@ -7,14 +7,14 @@ import {
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from './firebase';
 import {
-  Compound,
   Coords,
-  PeriodDBFormat,
-  PeriodName,
   Point,
   Route,
+  Compound,
+  PeriodDBFormat,
+  PeriodName,
 } from '../types';
-import { getDuration, getTotalDistance } from './coordCalculations';
+
 import { File, Paths } from 'expo-file-system';
 
 const periodMap: Record<PeriodName, PeriodDBFormat> = {
