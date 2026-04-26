@@ -6,7 +6,6 @@ import {
 } from 'expo-sqlite';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from './firebase';
-import { Coords, Point, Route } from '../types';
 
 import {
   Compound,
@@ -16,7 +15,7 @@ import {
   Point,
   Route,
 } from '../types';
-import { getDuration, getTotalDistance } from './coordCalculations';
+
 import { File, Paths } from 'expo-file-system';
 
 const periodMap: Record<PeriodName, PeriodDBFormat> = {

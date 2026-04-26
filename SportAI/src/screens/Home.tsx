@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,9 +19,9 @@ import {
   getRoutesByDate,
   deleteRoute,
   changeRouteName,
-  getSumRoute,
 } from '../util/dbHelper';
 import { useFocusEffect } from '@react-navigation/native';
+import { LineChart } from 'react-native-gifted-charts/dist/LineChart';
 
 export default function HomeScreen() {
   const db = useSQLiteContext();
@@ -44,7 +44,6 @@ export default function HomeScreen() {
         setAllRoutes(result);
       };
       loadRoutes();
-      getSumRoute(db, 'day').then((e) => console.log(e)); // test
     }, [])
   );
 
@@ -82,6 +81,56 @@ export default function HomeScreen() {
     const routes = await getRoutesByDate(db, date);
     setRoutesForDay(routes);
   };
+
+  const chartData = useMemo(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    monday.setHours(0, 0, 0, 0);
+
+    const days: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      days.push(d);
+    }
+
+    const key = (d: Date) =>
+      `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
+    const dailyTotals: Record<string, { distance: number; duration: number }> =
+      {};
+
+    days.forEach((d) => {
+      dailyTotals[key(d)] = { distance: 0, duration: 0 };
+    });
+
+    allRoutes.forEach((r) => {
+      const d = new Date(r.created * 1000);
+      d.setHours(0, 0, 0, 0);
+      const k = key(d);
+
+      if (dailyTotals[k] !== undefined) {
+        dailyTotals[k].distance += r.distance;
+        dailyTotals[k].duration += r.duration;
+      }
+    });
+    const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    return days.map((d) => {
+      const totals = dailyTotals[key(d)];
+      const speedKmh =
+        totals.duration > 0 ? (totals.distance / totals.duration) * 3.6 : 0;
+
+      return {
+        value: Number(speedKmh.toFixed(1)),
+        dataPointText: String(speedKmh.toFixed(1)) + ' km/h',
+        label: weekdayLabels[d.getDay()],
+      };
+    });
+  }, [allRoutes]);
 
   return (
     <SafeAreaView
@@ -228,6 +277,29 @@ export default function HomeScreen() {
             </View>
           </View>
         </Modal>
+        <View
+          style={{
+            marginTop: 20,
+            borderTopWidth: 1,
+            borderColor: theme.inputBorder,
+            paddingTop: 20,
+            padding: 10,
+            flexDirection: 'row',
+          }}
+        >
+          <LineChart
+            data={chartData}
+            hideYAxisText={true}
+            color={theme.text}
+            textFontSize1={10}
+            thickness={2}
+            dataPointsColor={theme.text}
+            yAxisColor={theme.text}
+            xAxisColor={theme.text}
+            xAxisLabelTextStyle={{ color: theme.text }}
+            yAxisTextStyle={{ color: theme.text }}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );

@@ -14,7 +14,6 @@ import Activities from '../screens/Activities';
 import Login from '../screens/Login';
 import Register from '../screens/Register';
 import AITest from '../screens/AITest';
-import SQLTest from '../screens/SQLTest';
 
 export type RootTabParamList = {
   Login: undefined;
@@ -25,7 +24,6 @@ export type RootTabParamList = {
   SettingsBack: undefined;
   Register: undefined;
   AITest: undefined;
-  SQLTest: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -105,7 +103,6 @@ export default function NavigationBar() {
       <Tab.Screen name="Activities" component={Activities} />
       <Tab.Screen name="Settings" component={SettingsTabs} />
       <Tab.Screen name="AITest" component={AITest} />
-      <Tab.Screen name="SQLTest" component={SQLTest} />
     </Tab.Navigator>
   );
 }
