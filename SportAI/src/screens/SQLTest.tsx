@@ -126,7 +126,7 @@ const SQLTest = () => {
             <View>
               <Text>
                 {item.route_id} {item.name} {item.distance} {item.duration}{' '}
-                {item.created.toString()}
+                {(item.created * 1000).toString()}
               </Text>
               <Button
                 title="Delete"
